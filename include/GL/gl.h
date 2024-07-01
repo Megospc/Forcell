@@ -1,0 +1,1 @@
+// This file was created to prevent including of the OpenGL library by GLFW
