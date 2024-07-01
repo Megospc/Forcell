@@ -6,7 +6,7 @@
 #include <filesystem>
 
 #include "Definitions.h"
-#include "GUI.h"
+#include "Logger.h"
 
 namespace File {
     namespace fs = std::filesystem;

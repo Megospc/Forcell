@@ -33,7 +33,7 @@ project(Forcell VERSION 1.0.0)
 
 set(EXECUTABLE "Forcell")
 
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 17)
 
 if (${OPTIMIZATIONS})
     set(CMAKE_CXX_FLAGS "-Ofast")
