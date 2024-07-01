@@ -26,7 +26,8 @@ For Ubuntu:
 3. Open `CMakeLists.txt` in Notepad and configure the settings.
 4. Open `run.bat` file (`run.sh` for Ubuntu) in terminal.
 5. Wait for compilation to complete.
-6. Open `Forcell.exe` (`Forcell` for Ubuntu) in `build` folder.
+6. The Forcell's window should open.
+7. Then you can open `Forcell.exe` (`build/Forcell` for Ubuntu) to run it again.
 
 ## Dependicies
 There are these libraries used in this project:
