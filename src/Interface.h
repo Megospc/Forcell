@@ -189,6 +189,10 @@ namespace Interface {
 
         lastsecond = time(NULL);
 
+        GUI::style->FrameRounding = 5.0*INTERFACE_SCALE;
+        GUI::style->GrabRounding = 5.0*INTERFACE_SCALE;
+        GUI::style->WindowRounding = 5.0*INTERFACE_SCALE;
+        
         return true;
     }
 

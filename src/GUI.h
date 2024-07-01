@@ -46,10 +46,6 @@ namespace GUI {
 
         style = &ImGui::GetStyle();
 
-        style->FrameRounding = 10.0;
-        style->GrabRounding = 10.0;
-        style->WindowRounding = 10.0;
-
         ImGui_ImplGlfw_InitForOpenGL(window->getWindow(), true);
 
         ImGui_ImplOpenGL3_Init("#version 130");
