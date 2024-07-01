@@ -46,15 +46,23 @@ namespace File {
         return result;
     }
 
-    bool Write(cstr path, Data data) {
+    Data Read(string path, bool zeroend) {
+        return Read(path.c_str(), zeroend);
+    }
+
+    bool Write(cstr path, Data data, bool zeroend = false) {
         std::ofstream stream(path);
 
         if (!stream) return false;
 
-        stream.write(data.data, data.length);
+        stream.write(data.data, data.length-(zeroend ? 1:0));
 
         stream.close();
 
         return true;
+    }
+
+    bool Write(string path, bool zeroend = false) {
+        return Write(path.c_str(), zeroend);
     }
 }
