@@ -13,6 +13,7 @@ namespace Simulation {
     struct Rule {
         float friction = 0.003;
         float attractor = 0.0;
+        float bounceForce = 1.0;
 
         int types = 2;
 
@@ -140,12 +141,12 @@ namespace Simulation {
 
                 float f; // Force
 
-                if (d2 < rr2) { // Collision
+                if ((d2 < rr2 && rule->bounceForce > 0.0) || d2 < 0.0001) { // Collision
                     float d = SQRT(d2);
 
                     float depth = rr-d;
 
-                    f = -depth/2.0/d;
+                    f = -depth/2.0/d*rule->bounceForce;
                 } else {
                     f = rule->forces[a->type*10+b->type]/d2;
                 }

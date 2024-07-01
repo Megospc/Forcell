@@ -320,6 +320,8 @@ namespace Interface {
             ImGui::DragFloat("Friction", &rule.friction, 0.0002, 0.0, 1.0, "%.3f");
             ImGui::SetNextItemWidth(100.0*INTERFACE_SCALE);
             ImGui::DragFloat("Attractor", &rule.attractor, 0.000001, 0.0, 1.0, "%.5f");
+            ImGui::SetNextItemWidth(100.0*INTERFACE_SCALE);
+            ImGui::DragFloat("Bounce force", &rule.bounceForce, 0.003, 0.0, 1.0, "%.2f");
 
             SmallOffset();
 
