@@ -135,9 +135,20 @@ namespace Simulation {
 
                 float d2 = dx*dx+dy*dy;
 
-                if (d2 < 0.001) d2 = 0.001, dx = 0.001, dy = 0.0;
+                float rr = a->size+b->size;
+                float rr2 = rr*rr;
 
-                float f =rule->forces[a->type*10+b->type]/d2;
+                float f; // Force
+
+                if (d2 < rr2) { // Collision
+                    float d = SQRT(d2);
+
+                    float depth = rr-d;
+
+                    f = -depth/2.0/d;
+                } else {
+                    f = rule->forces[a->type*10+b->type]/d2;
+                }
 
                 a->vx += dx*f;
                 a->vy += dy*f;
