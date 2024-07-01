@@ -316,6 +316,10 @@ namespace Interface {
 
             ImGui::SetNextItemWidth(100.0*INTERFACE_SCALE);
             ImGui::InputInt("Types count", &rule.types, 1, 1);
+            ImGui::SetNextItemWidth(100.0*INTERFACE_SCALE);
+            ImGui::DragFloat("Friction", &rule.friction, 0.0002, 0.0, 1.0, "%.3f");
+            ImGui::SetNextItemWidth(100.0*INTERFACE_SCALE);
+            ImGui::DragFloat("Attractor", &rule.attractor, 0.000001, 0.0, 1.0, "%.5f");
 
             SmallOffset();
 

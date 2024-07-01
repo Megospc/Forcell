@@ -11,7 +11,7 @@
 
 namespace Simulation {
     struct Rule {
-        float friction = 0.001;
+        float friction = 0.003;
         float attractor = 0.0;
 
         int types = 2;
