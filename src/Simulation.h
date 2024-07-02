@@ -59,9 +59,9 @@ namespace Simulation {
 
                 forces[i] = Rand::Sign()*f*f;
 
-                float r = Rand::Range(0.0, 1000.0*1000.0);
+                float r = Rand::Range(0.0, SQRT(1000.0));
 
-                zones[i] = Rand::Sign()*r*r;
+                zones[i] = r*r;
             }
 
             friction = Rand::Range(0.001, 0.100);
