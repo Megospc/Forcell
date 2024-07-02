@@ -24,6 +24,7 @@ For Ubuntu, these packages:
 + libgtk-3-dev
 + make
 
+## Steps
 1. Download zip-archive with source code.
 2. Extract the archive.
 3. Open `CMakeLists.txt` in Notepad and configure the settings.
