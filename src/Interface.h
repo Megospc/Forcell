@@ -35,6 +35,7 @@ namespace Interface {
     bool rendering = true;
     bool glowing = true;
     bool fullscreen = false;
+    bool confignoupdate = false;
 
     Simulation::Simulation* simulation = nullptr;
     Render::Render* render = nullptr;
@@ -206,6 +207,7 @@ namespace Interface {
 
         glowing = false;
         fullscreen = false;
+        confignoupdate = false;
 
         string str = data.data;
 
@@ -221,6 +223,8 @@ namespace Interface {
                 }
 
                 if (line == "glowing") glowing = true;
+
+                if (line == "noupdate") confignoupdate = true;
 
                 if (isStartsWith(line, "threads: ")) {
                     string count = line.substr(9);
@@ -529,7 +533,7 @@ namespace Interface {
     }
 
     void Destroy() {
-        SaveConfig();
+        if (!confignoupdate) SaveConfig();
 
         cleanup();
 
