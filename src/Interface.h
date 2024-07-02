@@ -315,7 +315,7 @@ namespace Interface {
             SmallOffset();
 
             ImGui::SetNextItemWidth(100.0*INTERFACE_SCALE);
-            ImGui::InputInt("Types count", &rule.types, 1, 1);
+            ImGui::InputInt("Number of types", &rule.types, 1, 1);
             ImGui::SetNextItemWidth(100.0*INTERFACE_SCALE);
             ImGui::DragFloat("Friction", &rule.friction, 0.0002, 0.0, 1.0, "%.3f");
             ImGui::SetNextItemWidth(100.0*INTERFACE_SCALE);
@@ -388,7 +388,7 @@ namespace Interface {
             ImGui::DragInt("Simulation size", &params.width, 10.0, 100, 10000);
             params.height = params.width;
             ImGui::SetNextItemWidth(100.0*INTERFACE_SCALE);
-            ImGui::DragInt("Particles count", &params.particles, 10.0, 0, 100000);
+            ImGui::DragInt("Number of particles", &params.particles, 10.0, 0, 100000);
 
             if (ImGui::Button("Restart", buttonMedium)) start();
 
