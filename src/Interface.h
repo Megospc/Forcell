@@ -48,6 +48,8 @@ namespace Interface {
     uint framecount = 0, stepcount = 0;
     int stepsperframe = 1;
     int threadcount = 1;
+    uint windowwidth = 1600;
+    uint windowheight = 900;
 
     vec2 camera;
     float zoomsteps;
@@ -149,7 +151,7 @@ namespace Interface {
     }
 
     void updateFullscreen() {
-        window->fullscreen(fullscreen, WINDOW_WIDTH, WINDOW_HEIGHT);
+        window->fullscreen(fullscreen, windowwidth, windowheight);
     }
 
     void keyboard(ImGuiKey key, int action) {
@@ -193,6 +195,8 @@ namespace Interface {
 
         str += KeyVal("threads", threadcount);
         str += KeyVal("wheel", wheelsensitivity);
+        str += KeyVal("width", window->getWidth());
+        str += KeyVal("height", window->getHeight());
 
         File::Data data;
 
@@ -221,17 +225,14 @@ namespace Interface {
             if (c == '\n') {
                 KeyVal data(line);
 
-                if (data.key == "fullscreen") {
-                    fullscreen = true;
-                    updateFullscreen();
-                }
-
+                if (data.key == "fullscreen") fullscreen = true;
                 if (data.key == "glowing") glowing = true;
-
                 if (data.key == "noupdate") confignoupdate = true;
 
                 if (data.key == "threads") threadcount = stoi(data.val);
                 if (data.key == "wheel") wheelsensitivity = stof(data.val);
+                if (data.key == "width") windowwidth = stoi(data.val);
+                if (data.key == "height") windowheight = stoi(data.val);
 
                 line = "";
             } else line += c;
@@ -239,7 +240,11 @@ namespace Interface {
     }
 
     bool Init() {
-        window = new GL::Window("Forcell", WINDOW_WIDTH, WINDOW_HEIGHT, true);
+        LoadConfig();
+
+        window = new GL::Window("Forcell", windowwidth, windowheight, true);
+
+        updateFullscreen();
 
         GUI::INI("assets/imgui.ini");
 
@@ -268,8 +273,6 @@ namespace Interface {
         GUI::style->WindowRounding = 5.0*INTERFACE_SCALE;
 
         threadcount = Simulation::GetThreads();
-
-        LoadConfig();
 
         return true;
     }

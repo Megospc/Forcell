@@ -9,11 +9,6 @@
 
 #define VERSION "Version: 1.2.0 (02.07.2024)"
 
-#ifndef WINDOW_WIDTH
-#define WINDOW_WIDTH 1600
-#define WINDOW_HEIGHT 900
-#endif
-
 #include "Definitions.h"
 #include "Interface.h"
 #include "GL.h"

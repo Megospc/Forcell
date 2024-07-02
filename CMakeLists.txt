@@ -1,6 +1,4 @@
 # SETTINGS
-set(WINDOW_WIDTH 1600) # Initial window width
-set(WINDOW_HEIGHT 900) # Initial window height
 set(INTERFACE_SCALING 2.0) # Interface scaling
 
 set(POST_PROCESSING ON)

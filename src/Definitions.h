@@ -110,6 +110,10 @@ struct KeyVal {
         this->key = key;
         this->val = std::to_string(val);
     }
+    KeyVal(string key, uint val) {
+        this->key = key;
+        this->val = std::to_string(val);
+    }
     KeyVal(string key, float val, cstr fmt = "%.1f") {
         this->key = key;
         this->val = floatString(val, fmt);
