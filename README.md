@@ -1,7 +1,7 @@
 # Forcell
 Forcell is a particle life simulation with new features and GPU computing via OpenCL.
 
-Version: 1.0.0 (01.07.2024)
+Version: 1.2.0 (02.07.2024)
 
 ## Features
 + Multi-threaded computing on CPU

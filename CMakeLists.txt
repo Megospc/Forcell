@@ -29,7 +29,7 @@ set(OPTIMIZATIONS ON) # Enable compiler optimizations
 # MAIN CODE
 cmake_minimum_required(VERSION 3.1)
 
-project(Forcell VERSION 1.0.0)
+project(Forcell VERSION 1.2.0)
 
 set(EXECUTABLE "Forcell")
 

@@ -3,11 +3,11 @@
  * 
  * Copyright (c) 2024 Megospc
  * 
- * Version: 1.0.0 (01.07.2024)
+ * Version: 1.2.0 (02.07.2024)
  * 
 **********************************/
 
-#define VERSION "Version: 1.0.0 (01.07.2024)"
+#define VERSION "Version: 1.2.0 (02.07.2024)"
 
 #ifndef WINDOW_WIDTH
 #define WINDOW_WIDTH 1600
