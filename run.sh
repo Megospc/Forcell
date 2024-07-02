@@ -1,3 +1,4 @@
 cmake -B build -G "Unix Makefiles"
 cmake --build build
-./build/Forcell
+cp ./build/Forcell ./Forcell
+./Forcell

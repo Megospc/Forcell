@@ -32,7 +32,7 @@ For Ubuntu, these packages:
 5. Open `run.bat` file (`run.sh` for Ubuntu) in terminal.
 6. Wait for compilation to complete.
 7. The Forcell's window should open.
-8. Then you can open `Forcell.exe` (`build/Forcell` for Ubuntu) to run it again.
+8. Then you can open `Forcell.exe` (`Forcell` for Ubuntu) to run it again.
 
 ## Dependicies
 There are these libraries used in this project:
