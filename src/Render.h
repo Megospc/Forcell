@@ -21,7 +21,7 @@ namespace Render {
         0.5, 0.9, 1.0, // Sky-blue
         1.0, 0.5, 0.3, // Orange
         0.4, 0.4, 1.0, // Deep blue
-        0.75, 1.0, 0.5, // Yellow-green
+        0.75, 1.0, 0.3, // Yellow-green
         1.0, 0.35, 0.3, // Red
         0.8, 0.8, 0.8 // White
     };
