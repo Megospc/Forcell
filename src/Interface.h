@@ -24,7 +24,7 @@
 #define CollapsingEnd ImGui::TreePop()
 
 namespace Interface {
-    GL::Window* window;
+    GL::Window* window = nullptr;
 
     ImFont* fontMedium;
     ImFont* fontSmall;
@@ -33,6 +33,7 @@ namespace Interface {
     bool pause = false;
     bool rendering = true;
     bool glowing = true;
+    bool fullscreen = false;
 
     Simulation::Simulation* simulation = nullptr;
     Render::Render* render = nullptr;
@@ -143,6 +144,10 @@ namespace Interface {
         render = new Render::Render(window, simulation);
     }
 
+    void updateFullscreen() {
+        window->fullscreen(fullscreen, WINDOW_WIDTH, WINDOW_HEIGHT);
+    }
+
     void keyboard(ImGuiKey key, int action) {
         if (action == GLFW_PRESS || action == GLFW_RELEASE) {
             if (key == ImGuiKey_Minus) zoomsteps -= 1.0;
@@ -167,15 +172,23 @@ namespace Interface {
             if (key == ImGuiKey_O || key == ImGuiKey_0) zoomsteps = 0.0;
 
             if (key == ImGuiKey_R) start();
+
+            if (key == ImGuiKey_F11) {
+                fullscreen = !fullscreen;
+
+                updateFullscreen();
+            }
         }
     }
 
-    bool Init(GL::Window* glwindow) {
-        window = glwindow;
+    bool Init() {
+        window = new GL::Window("Forcell", WINDOW_WIDTH, WINDOW_HEIGHT, true);
 
         GUI::INI("assets/imgui.ini");
 
-        if (!GUI::Init(glwindow)) return false;
+        if (!window->isOk()) return false;
+
+        if (!GUI::Init(window)) return false;
 
         fontMedium = GUI::LoadTTF(FONT_PATH, 16.0*INTERFACE_SCALE);
         fontSmall = GUI::LoadTTF(FONT_PATH, 8.0*INTERFACE_SCALE);
@@ -198,10 +211,6 @@ namespace Interface {
         GUI::style->WindowRounding = 5.0*INTERFACE_SCALE;
         
         return true;
-    }
-
-    void Destroy() {
-        GUI::Destroy();
     }
 
     void ColorLabel(string id, ImVec4 clr, ImVec2 size) {
@@ -305,6 +314,7 @@ namespace Interface {
             #endif
 
             ImGui::Checkbox("Glow effect", &glowing);
+            if (ImGui::Checkbox("Fullscreen mode", &fullscreen)) updateFullscreen();
 
             CollapsingEnd;
         }
@@ -447,13 +457,15 @@ namespace Interface {
         }
     }
 
+    void Destroy() {
+        cleanup();
+
+        GUI::Destroy();
+
+        delete window;
+    }
+
     void Begin() {
         GUI::Begin(frame);
-
-        /*render->render(camera, zoom());
-
-        glfwSwapBuffers(window->getWindow());
-
-        while (!glfwWindowShouldClose(window->getWindow())) glfwPollEvents();*/
     }
 }

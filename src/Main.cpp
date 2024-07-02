@@ -18,27 +18,14 @@
 #include "Interface.h"
 #include "GL.h"
 
-GL::Window* window;
-
 int main() {
     if (!GL::Init()) return 1;
 
-    #ifdef FULLSCREEN
-    window = new GL::Window("Forcell");
-    #else
-    window = new GL::Window("Forcell", WINDOW_WIDTH, WINDOW_HEIGHT, true);
-    #endif
-    
-
-    if (!window->isOk()) return 1;
-
-    Interface::Init(window);
+    if (!Interface::Init()) return 1;
 
     Interface::Begin();
 
     Interface::Destroy();
-
-    delete window;
 
     GL::Destroy();
     

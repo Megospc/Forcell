@@ -11,8 +11,6 @@ set(FRAMEBUFFER_RESOLUTION_REDUCING 1.0) # Reducing of framebuffer resolution
 # (for slow GPU, only if post-processing enabled)
 # 1.0 - don't reduce, 2.0 - reduce by 2 times, etc
 
-set(FULL_SCREEN OFF) # Fullscreen window
-
 set(THREADS_COUNT 4)
 set(COMPUTING_TYPE "CPU")
 # ONE = Use one thread of CPU to compute

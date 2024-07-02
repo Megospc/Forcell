@@ -58,19 +58,20 @@ namespace GL {
         public:
             Window(cstr title, uint width, uint height, bool resize = false) {
                 glfwWindowHint(GLFW_RESIZABLE, resize ? GLFW_TRUE:GLFW_FALSE);
+                glfwWindowHint(GLFW_DECORATED, GLFW_TRUE);
 
                 create(title, width, height, NULL, NULL);
             }
 
-            Window(cstr title) { // Full screen
+            /*Window(cstr title) { // Full screen
                 glfwWindowHint(GLFW_DECORATED, GLFW_FALSE);
 
-                GLFWmonitor* monitor = glfwGetPrimaryMonitor();
+                
 
-                const GLFWvidmode* vidmode = glfwGetVideoMode(monitor);
+                
 
                 create(title, vidmode->width, vidmode->height, monitor, NULL);
-            }
+            }*/
 
             ~Window() {
                 if (!ok) return;
@@ -82,6 +83,18 @@ namespace GL {
             
             bool isOk() {
                 return ok;
+            }
+
+            void fullscreen(bool flag, uint width, uint height) {
+                if (flag) {
+                    GLFWmonitor* monitor = glfwGetPrimaryMonitor();
+
+                    const GLFWvidmode* vidmode = glfwGetVideoMode(monitor);
+
+                    glfwSetWindowMonitor(glwindow, monitor, 0, 0, vidmode->width, vidmode->height, GLFW_DONT_CARE);
+                } else {
+                    glfwSetWindowMonitor(glwindow, NULL, 0, 0, width, height, GLFW_DONT_CARE);
+                }
             }
 
             void icon(GLFWimage* images, uint count = 1) {
