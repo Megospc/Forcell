@@ -263,7 +263,7 @@ namespace Interface {
         GUI::style->WindowRounding = 5.0*INTERFACE_SCALE;
 
         threadcount = Simulation::GetThreads();
-        
+
         LoadConfig();
 
         return true;
@@ -292,6 +292,42 @@ namespace Interface {
         ImGui::PushFont(fontSmall);
         ImGui::NewLine();
         ImGui::PopFont();
+    }
+
+    void RuleTable(cstr id, float* ptr, float min, float max, float speed, cstr fmt) {
+        if (ImGui::BeginTable(
+            id,
+            rule.types+2,
+            ImGuiTableFlags_Borders | ImGuiTableFlags_ScrollX | ImGuiTableFlags_ScrollY,
+            ImVec2(180.0*INTERFACE_SCALE, 140.0*INTERFACE_SCALE)
+        )) {
+            ImGui::TableSetupScrollFreeze(1, 1);
+            
+            for (int j = -1; j < rule.types; j++) {
+                ImGui::TableNextRow();
+
+                if (j >= 0) {
+                    ImGui::TableSetColumnIndex(0);
+
+                    ColorLabel(string("##rownames")+id+std::to_string(j), GetTypeColor(j), ImVec2(28.0*INTERFACE_SCALE, 18.0*INTERFACE_SCALE));
+
+                    for (uint i = 0; i < rule.types; i++) {
+                        ImGui::TableSetColumnIndex(i+1);
+
+                        ImGui::SetNextItemWidth(30.0*INTERFACE_SCALE);
+                        ImGui::DragFloat((string("##")+id+std::to_string(i)+"-"+std::to_string(j)).c_str(), &ptr[i+j*10], speed, min, max, fmt);
+                    }
+                } else {
+                    for (uint i = 0; i < rule.types; i++) {
+                        ImGui::TableSetColumnIndex(i+1);
+
+                        ColorLabel(string("##columnnames")+id+std::to_string(i), GetTypeColor(i), ImVec2(28.0*INTERFACE_SCALE, 18.0*INTERFACE_SCALE));
+                    }
+                }
+            }
+
+            ImGui::EndTable();
+        }
     }
     
     void frame() {
@@ -402,39 +438,15 @@ namespace Interface {
             SmallOffset();
 
             CollapsingHeader("Forces") {
-                if (ImGui::BeginTable(
-                    "forcestable",
-                    rule.types+2,
-                    ImGuiTableFlags_Borders | ImGuiTableFlags_ScrollX | ImGuiTableFlags_ScrollY,
-                    ImVec2(180.0*INTERFACE_SCALE, 140.0*INTERFACE_SCALE)
-                )) {
-                    ImGui::TableSetupScrollFreeze(1, 1);
-                    
-                    for (int j = -1; j < rule.types; j++) {
-                        ImGui::TableNextRow();
+                RuleTable("forcetable", rule.forces, -1.0, 1.0, 0.001, "%.2f");
 
-                        if (j >= 0) {
-                            ImGui::TableSetColumnIndex(0);
+                CollapsingEnd;
 
-                            ColorLabel("##typescolumnnames"+std::to_string(j), GetTypeColor(j), ImVec2(28.0*INTERFACE_SCALE, 18.0*INTERFACE_SCALE));
+                SmallOffset();
+            }
 
-                            for (uint i = 0; i < rule.types; i++) {
-                                ImGui::TableSetColumnIndex(i+1);
-
-                                ImGui::SetNextItemWidth(30.0*INTERFACE_SCALE);
-                                ImGui::DragFloat(("##forcetable"+std::to_string(i)+"-"+std::to_string(j)).c_str(), &rule.forces[i+j*10], 0.001, -5.0, 5.0, "%.2f");
-                            }
-                        } else {
-                            for (uint i = 0; i < rule.types; i++) {
-                                ImGui::TableSetColumnIndex(i+1);
-
-                                ColorLabel("##typesrownames"+std::to_string(i), GetTypeColor(i), ImVec2(28.0*INTERFACE_SCALE, 18.0*INTERFACE_SCALE));
-                            }
-                        }
-                    }
-
-                    ImGui::EndTable();
-                }
+            CollapsingHeader("Max. interaction distances") {
+                RuleTable("zonetable", rule.zones, 0.0, 10000.0, 1.0, "%.0f");
 
                 CollapsingEnd;
 
