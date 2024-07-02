@@ -9,6 +9,7 @@ Version: 1.0.0 (01.07.2024)
 
 ## Screenshots
 <img src="images/screen1.png" width="600">
+<img src="images/screen2.png" width="600">
 
 ## How To Run
 ### What You Need
