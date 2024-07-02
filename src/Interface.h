@@ -328,7 +328,7 @@ namespace Interface {
             ImGui::SetNextItemWidth(100.0*INTERFACE_SCALE);
             ImGui::DragFloat("Attractor", &rule.attractor, 0.000001, 0.0, 1.0, "%.5f");
             ImGui::SetNextItemWidth(100.0*INTERFACE_SCALE);
-            ImGui::DragFloat("Bounce force", &rule.bounceForce, 0.003, 0.0, 1.0, "%.2f");
+            ImGui::DragFloat("Bounce force", &rule.bounceForce, 0.001, 0.0, 1.0, "%.2f");
 
             SmallOffset();
 
@@ -375,7 +375,7 @@ namespace Interface {
             CollapsingHeader("Frequencies") {
                 for (uint i = 0; i < rule.types; i++) {
                     ImGui::SetNextItemWidth(100.0*INTERFACE_SCALE);
-                    ImGui::DragFloat(("##freqs"+std::to_string(i)).c_str(), &rule.freqs[i], 0.005, 0.0, 10.0, "%.2f");
+                    ImGui::DragFloat(("##freqs"+std::to_string(i)).c_str(), &rule.freqs[i], 0.002, 0.0, 10.0, "%.2f");
                     ImGui::SameLine();
                     ColorLabel("##freqsclr"+std::to_string(i), GetTypeColor(i), ImVec2(60.0*INTERFACE_SCALE, 18.0*INTERFACE_SCALE));
                 }

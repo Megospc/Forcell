@@ -18,10 +18,11 @@ For Windows:
 + CMake
 + GNU Make
 
-For Ubuntu:
-+ GCC
-+ CMake
+For Ubuntu, these packages:
++ gcc
++ cmake
 + libgtk-3-dev
++ make
 
 1. Download zip-archive with source code.
 2. Extract the archive.
