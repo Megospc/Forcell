@@ -81,3 +81,37 @@ float angleOfVector(float x, float y, float d = -1.0) {
 
     return y < 0.0 ? MAX_ANGLE-a:a;
 }
+
+struct KeyVal {
+    string key;
+    string val;
+
+    operator string() {
+        return key+(val.length() ? ": "+val:"")+"\n";
+    }
+
+    KeyVal(string str) {
+        uint i = 0;
+
+        for (i = 0; i < str.length(); i++) {
+            if (str[i] == ':') break;
+
+            key += str[i];
+        }
+
+        for (i += 2; i < str.length(); i++) val += str[i];
+    }
+
+    KeyVal(string key, string val) {
+        this->key = key;
+        this->val = val;
+    }
+    KeyVal(string key, int val) {
+        this->key = key;
+        this->val = std::to_string(val);
+    }
+    KeyVal(string key, float val, cstr fmt = "%.1f") {
+        this->key = key;
+        this->val = floatString(val, fmt);
+    }
+};

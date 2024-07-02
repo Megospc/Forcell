@@ -188,11 +188,11 @@ namespace Interface {
     void SaveConfig() {
         string str = "";
 
-        if (fullscreen) str += "fullscreen\n";
-        if (glowing) str += "glowing\n";
+        if (fullscreen) str += KeyVal("fullscreen", "");
+        if (glowing) str += KeyVal("glowing", "");
 
-        str += "threads: "+std::to_string(threadcount)+"\n";
-        str += "wheel: "+floatString(wheelsensitivity, "%.1f")+"\n";
+        str += KeyVal("threads", threadcount);
+        str += KeyVal("wheel", wheelsensitivity);
 
         File::Data data;
 
@@ -219,26 +219,19 @@ namespace Interface {
             char c = str[i];
 
             if (c == '\n') {
-                if (line == "fullscreen") {
+                KeyVal data(line);
+
+                if (data.key == "fullscreen") {
                     fullscreen = true;
                     updateFullscreen();
                 }
 
-                if (line == "glowing") glowing = true;
+                if (data.key == "glowing") glowing = true;
 
-                if (line == "noupdate") confignoupdate = true;
+                if (data.key == "noupdate") confignoupdate = true;
 
-                if (isStartsWith(line, "threads: ")) {
-                    string count = line.substr(9);
-
-                    threadcount = stoi(count);
-                }
-
-                if (isStartsWith(line, "wheel: ")) {
-                    string value = line.substr(7);
-
-                    wheelsensitivity = stof(value);
-                }
+                if (data.key == "threads") threadcount = stoi(data.val);
+                if (data.key == "wheel") wheelsensitivity = stof(data.val);
 
                 line = "";
             } else line += c;
