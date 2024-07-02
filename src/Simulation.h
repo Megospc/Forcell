@@ -48,7 +48,7 @@ namespace Simulation {
             }
 
             friction = Rand::Range(0.001, 0.100);
-            attractor = Rand::Range(0.00000, 0.00050);
+            attractor = 0.0;
             bounceForce = Rand::Range(0.5, 1.0);
         }
     };
