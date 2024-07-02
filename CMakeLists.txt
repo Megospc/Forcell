@@ -3,8 +3,6 @@ set(WINDOW_WIDTH 1600) # Initial window width
 set(WINDOW_HEIGHT 900) # Initial window height
 set(INTERFACE_SCALING 2.0) # Interface scaling
 
-set(WHEEL_SENSITIVITY 20.0) # Mouse wheel sensitivity
-
 set(POST_PROCESSING ON)
 
 set(FRAMEBUFFER_RESOLUTION_REDUCING 1.0) # Reducing of framebuffer resolution

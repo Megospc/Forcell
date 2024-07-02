@@ -51,6 +51,7 @@ namespace Interface {
 
     vec2 camera;
     float zoomsteps;
+    float wheelsensitivity = 20.0;
 
     float particlebright = 1.0;
 
@@ -119,7 +120,7 @@ namespace Interface {
     }
 
     void mousewheel(float x, float y) {
-        zoomsteps += y*WHEEL_STEP;
+        zoomsteps += y*wheelsensitivity;
 
         SCLAMP(zoomsteps, MIN_ZOOM, MAX_ZOOM);
     }
@@ -190,7 +191,8 @@ namespace Interface {
         if (fullscreen) str += "fullscreen\n";
         if (glowing) str += "glowing\n";
 
-        str += "threads: "+std::to_string(threadcount);
+        str += "threads: "+std::to_string(threadcount)+"\n";
+        str += "wheel: "+floatString(wheelsensitivity, "%.1f")+"\n";
 
         File::Data data;
 
@@ -230,6 +232,12 @@ namespace Interface {
                     string count = line.substr(9);
 
                     threadcount = stoi(count);
+                }
+
+                if (isStartsWith(line, "wheel: ")) {
+                    string value = line.substr(7);
+
+                    wheelsensitivity = stof(value);
                 }
 
                 line = "";
@@ -414,6 +422,24 @@ namespace Interface {
 
             ImGui::Checkbox("Glow effect", &glowing);
             if (ImGui::Checkbox("Fullscreen mode", &fullscreen)) updateFullscreen();
+
+            CollapsingEnd;
+        }
+
+        CollapsingHeader("Camera") {
+            ImGui::Text("Camera: %.0f:%.0f", -camera.x*simulation->width/2.0, -camera.y*simulation->height/2.0);
+            ImGui::SameLine();
+            if (ImGui::Button("Reset##resetcamera", buttonMedium)) camera = vec2(0.0, 0.0);
+
+            ImGui::SetNextItemWidth(60.0*INTERFACE_SCALE);
+            ImGui::SliderFloat("##zoom", &zoomsteps, MIN_ZOOM, MAX_ZOOM, "");
+            ImGui::SameLine();
+            ImGui::Text("Zoom: %.2f", zoom());
+            ImGui::SameLine();
+            if (ImGui::Button("Reset##resetzoom", buttonMedium)) zoomsteps = 0.0;
+
+            ImGui::SetNextItemWidth(60.0*INTERFACE_SCALE);
+            ImGui::DragFloat("Mouse wheel sensitivity", &wheelsensitivity, 0.05, 0.0, 1000.0, "%.1f");
 
             CollapsingEnd;
         }
