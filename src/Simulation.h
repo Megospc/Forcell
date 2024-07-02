@@ -36,8 +36,20 @@ namespace Simulation {
             SCLAMP(types, 1, 10);
         }
 
-        void random() {
+        void random(uint seed) {
+            Rand::Seed(seed);
 
+            for (uint i = 0; i < 10; i++) freqs[i] = Rand::Range(0.01, 1.00);
+
+            for (uint i = 0; i < 100; i++) {
+                float r = Rand::Range(0.0, 1.0);
+
+                forces[i] = Rand::Sign()*r*r;
+            }
+
+            friction = Rand::Range(0.001, 0.100);
+            attractor = Rand::Range(0.00000, 0.00050);
+            bounceForce = Rand::Range(0.5, 1.0);
         }
     };
 
@@ -45,7 +57,7 @@ namespace Simulation {
         int width = 1000;
         int height = 1000;
 
-        int seed = 1;
+        uint seed = 1;
 
         int particles = 400;
 

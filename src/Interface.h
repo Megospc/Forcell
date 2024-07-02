@@ -125,15 +125,19 @@ namespace Interface {
         if (render != nullptr) delete render;
     }
 
-    void start() {
-        cleanup();
-
+    uint seed() { // Get random seed
         srand((uint)(Logger::Bench::Time()*1000.0));
 
         for (uint i = 0; i < 10; i++) rand();
 
+        return rand();
+    }
+
+    void start() {
+        cleanup();
+
         params.rule = &rule;
-        params.seed = rand();
+        params.seed = seed();
 
         simulation = new Simulation::Simulation(params);
         render = new Render::Render(window, simulation);
@@ -310,7 +314,10 @@ namespace Interface {
             //ImGui::SameLine();
             //if (ImGui::Button("Import", buttonMedium));
 
-            //if (ImGui::Button("Randomize", buttonDouble)) rule.random();
+            if (ImGui::Button("Randomize", buttonDouble)) {
+                rule.random(seed());
+                start();
+            }
 
             SmallOffset();
 
