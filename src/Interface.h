@@ -19,6 +19,7 @@
 #include "Input.h"
 #include "Simulation.h"
 #include "Render.h"
+#include "Files.h"
 
 #define CollapsingHeader(name) ImGui::Separator();if (ImGui::TreeNodeEx(name))
 #define CollapsingEnd ImGui::TreePop()
@@ -181,6 +182,48 @@ namespace Interface {
         }
     }
 
+    void SaveConfig() {
+        string str = "";
+
+        if (fullscreen) str += "fullscreen\n";
+        if (glowing) str += "glowing\n";
+
+        File::Data data;
+
+        data.data = (char*)str.c_str();
+        data.length = str.length();
+
+        File::Write("config.txt", data);
+    }
+
+    void LoadConfig() {
+        File::Data data = File::Read("config.txt", true);
+
+        if (data.length == -1) return;
+
+        glowing = false;
+        fullscreen = false;
+
+        string str = data.data;
+
+        string line = "";
+
+        for (uint i = 0; i < str.length(); i++) {
+            char c = str[i];
+
+            if (c == '\n') {
+                if (line == "fullscreen") {
+                    fullscreen = true;
+                    updateFullscreen();
+                }
+
+                if (line == "glowing") glowing = true;
+
+                line = "";
+            } else line += c;
+        }
+    }
+
     bool Init() {
         window = new GL::Window("Forcell", WINDOW_WIDTH, WINDOW_HEIGHT, true);
 
@@ -209,7 +252,9 @@ namespace Interface {
         GUI::style->FrameRounding = 5.0*INTERFACE_SCALE;
         GUI::style->GrabRounding = 5.0*INTERFACE_SCALE;
         GUI::style->WindowRounding = 5.0*INTERFACE_SCALE;
-        
+
+        LoadConfig();
+
         return true;
     }
 
@@ -458,6 +503,8 @@ namespace Interface {
     }
 
     void Destroy() {
+        SaveConfig();
+
         cleanup();
 
         GUI::Destroy();

@@ -23,27 +23,34 @@ namespace File {
     Data Read(cstr path, bool zeroend = false) {
         FILE* file;
         size_t length;
+        char* data;
         
         file = fopen(path, "rb");
+
+        if (!file) {
+            length = -1;
+            goto result;
+        }
 
         // Getting length:
         fseek(file, 0, SEEK_END);
         length = ftell(file)+(zeroend ? 1:0);
         rewind(file);
 
-        char* data = MALLOC(char, length);
-        size_t r = fread(data, 1, length, file);
+        data = MALLOC(char, length);
+        fread(data, 1, length, file);
 
         if (zeroend) data[length-1] = '\0';
 
         fclose(file);
 
-        Data result;
+        result:
+            Data result;
 
-        result.data = data;
-        result.length = length;
+            result.data = data;
+            result.length = length;
 
-        return result;
+            return result;
     }
 
     Data Read(string path, bool zeroend) {
