@@ -346,7 +346,7 @@ namespace Interface {
                                 ImGui::TableSetColumnIndex(i+1);
 
                                 ImGui::SetNextItemWidth(30.0*INTERFACE_SCALE);
-                                ImGui::DragFloat(("##forcetable"+std::to_string(i)+"-"+std::to_string(j)).c_str(), &rule.forces[i+j*10], 0.003, -5.0, 5.0, "%.2f");
+                                ImGui::DragFloat(("##forcetable"+std::to_string(i)+"-"+std::to_string(j)).c_str(), &rule.forces[i+j*10], 0.001, -5.0, 5.0, "%.2f");
                             }
                         } else {
                             for (uint i = 0; i < rule.types; i++) {
@@ -368,7 +368,7 @@ namespace Interface {
             CollapsingHeader("Frequencies") {
                 for (uint i = 0; i < rule.types; i++) {
                     ImGui::SetNextItemWidth(100.0*INTERFACE_SCALE);
-                    ImGui::DragFloat(("##freqs"+std::to_string(i)).c_str(), &rule.freqs[i], 0.01, 0.0, 10.0, "%.2f");
+                    ImGui::DragFloat(("##freqs"+std::to_string(i)).c_str(), &rule.freqs[i], 0.005, 0.0, 10.0, "%.2f");
                     ImGui::SameLine();
                     ColorLabel("##freqsclr"+std::to_string(i), GetTypeColor(i), ImVec2(60.0*INTERFACE_SCALE, 18.0*INTERFACE_SCALE));
                 }
