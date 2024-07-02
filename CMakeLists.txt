@@ -11,10 +11,8 @@ set(FRAMEBUFFER_RESOLUTION_REDUCING 1.0) # Reducing of framebuffer resolution
 # (for slow GPU, only if post-processing enabled)
 # 1.0 - don't reduce, 2.0 - reduce by 2 times, etc
 
-set(THREADS_COUNT 4)
 set(COMPUTING_TYPE "CPU")
-# ONE = Use one thread of CPU to compute
-# CPU = Use ${THREADS_COUNT} threads of CPU to compute
+# CPU = Use CPU to compute
 # GPU = Use OpenCL to compute on GPU (COMING SOON)
 
 set(OPTIMIZATIONS ON) # Enable compiler optimizations

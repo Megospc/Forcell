@@ -66,6 +66,12 @@ bool isEndsWith(std::string str, std::string ending) {
     return str.compare(str.length()-ending.length(), ending.length(), ending) == 0;
 }
 
+bool isStartsWith(std::string str, std::string starting) {
+    if (str.length() < starting.length()) return false;
+
+    return str.compare(0, starting.length(), starting) == 0;
+}
+
 float angleOfVector(float x, float y, float d = -1.0) {
     if (d < 0.0) d = SQRT(x*x+y*y);
 

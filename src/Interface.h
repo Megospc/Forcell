@@ -46,6 +46,7 @@ namespace Interface {
     uint lastsecond;
     uint framecount = 0, stepcount = 0;
     int stepsperframe = 1;
+    int threadcount = 1;
 
     vec2 camera;
     float zoomsteps;
@@ -188,6 +189,8 @@ namespace Interface {
         if (fullscreen) str += "fullscreen\n";
         if (glowing) str += "glowing\n";
 
+        str += "threads: "+std::to_string(threadcount);
+
         File::Data data;
 
         data.data = (char*)str.c_str();
@@ -218,6 +221,12 @@ namespace Interface {
                 }
 
                 if (line == "glowing") glowing = true;
+
+                if (isStartsWith(line, "threads: ")) {
+                    string count = line.substr(9);
+
+                    threadcount = stoi(count);
+                }
 
                 line = "";
             } else line += c;
@@ -253,6 +262,8 @@ namespace Interface {
         GUI::style->GrabRounding = 5.0*INTERFACE_SCALE;
         GUI::style->WindowRounding = 5.0*INTERFACE_SCALE;
 
+        threadcount = Simulation::GetThreads();
+        
         LoadConfig();
 
         return true;
@@ -290,7 +301,7 @@ namespace Interface {
         ImVec2 buttonDouble = ImVec2(160.0*INTERFACE_SCALE+GUI::style->ItemSpacing.x, 18.0*INTERFACE_SCALE);
 
         if (!pause) for (uint i = 0; i < stepsperframe; i++) {
-            simulation->step();
+            simulation->step(threadcount);
 
             stepcount++;
         }
@@ -343,6 +354,9 @@ namespace Interface {
             ImGui::SetNextItemWidth(100.0*INTERFACE_SCALE);
 
             ImGui::SliderInt("##stepsperframe", &stepsperframe, 1, 5, stepsperframe == 1 ? "%d step per frame":"%d steps per frame");
+
+            ImGui::SetNextItemWidth(100.0*INTERFACE_SCALE);
+            ImGui::InputInt("CPU threads", &threadcount, 1, 8);
 
             ImGui::Checkbox("Rendering", &rendering);
 

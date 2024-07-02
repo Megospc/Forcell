@@ -63,16 +63,6 @@ namespace GL {
                 create(title, width, height, NULL, NULL);
             }
 
-            /*Window(cstr title) { // Full screen
-                glfwWindowHint(GLFW_DECORATED, GLFW_FALSE);
-
-                
-
-                
-
-                create(title, vidmode->width, vidmode->height, monitor, NULL);
-            }*/
-
             ~Window() {
                 if (!ok) return;
                 

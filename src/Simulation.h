@@ -5,9 +5,9 @@
 #include "Definitions.h"
 #include "Random.h"
 
-#ifdef SIMULATION_THREADS
+#define MAX_SIMULATION_THREADS 256
+
 #include <thread>
-#endif
 
 namespace Simulation {
     struct Rule {
@@ -125,7 +125,7 @@ namespace Simulation {
             }
 
             void _task(uint, uint);
-            void step();
+            void step(uint);
 
             float width, height;
 
@@ -178,31 +178,27 @@ namespace Simulation {
         }
     }
 
-    void Simulation::step() {
-        #ifdef SIMULATION_THREADS
-        std::thread* threads[SIMULATION_THREADS];
+    void Simulation::step(uint threadcount) {
+        std::thread* threads[MAX_SIMULATION_THREADS];
 
         float curstart = 0.0;
         float sumtask = particlesCount;
-        float perthread = sumtask/SIMULATION_THREADS;
+        float perthread = sumtask/threadcount;
 
-        for (uint i = 0; i < SIMULATION_THREADS; i++) {
+        for (uint i = 0; i < threadcount; i++) {
             threads[i] = new std::thread(
                 task,
                 this,
                 curstart,
-                i == SIMULATION_THREADS-1 ? particlesCount:curstart+perthread
+                i == threadcount-1 ? particlesCount:curstart+perthread
             );
 
             curstart += perthread;
         }
 
-        for (uint i = 0; i < SIMULATION_THREADS; i++) threads[i]->join();
+        for (uint i = 0; i < threadcount; i++) threads[i]->join();
 
-        for (uint i = 0; i < SIMULATION_THREADS; i++) delete threads[i];
-        #else
-        _task(0, particlesCount);
-        #endif
+        for (uint i = 0; i < threadcount; i++) delete threads[i];
 
         for (uint i = 0; i < particlesCount; i++) {
             Particle* a = &particles[i];
@@ -223,5 +219,9 @@ namespace Simulation {
         }
 
         frame++;
+    }
+
+    uint GetThreads() {
+        return std::thread::hardware_concurrency();
     }
 }
