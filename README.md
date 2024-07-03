@@ -1,7 +1,7 @@
 <h1 align="center">🧲 Forcell 🧬</h1>
 Forcell is a particle life simulation with new features and GPU computing via OpenCL.
 
-Version: 1.2.0 (02.07.2024)
+Version: 1.3.0 (03.07.2024)
 
 ## ✨ Features
 + Multi-threaded computing on CPU
@@ -21,7 +21,7 @@ For Windows:
 + CMake
 + GNU Make
 
-For Ubuntu, theese packages:
+For Ubuntu, these packages:
 + gcc
 + cmake
 + libgtk-3-dev
@@ -37,6 +37,9 @@ If GPU-computing enabled, the OpenCL SDK is required for both OS.
 5. Wait for compilation to complete.
 6. The Forcell's window should open.
 7. Then you can open `Forcell.exe` (`Forcell` for Ubuntu) to run it again.
+
+## 💿 Pre-compiled Binaries
+You can download pre-compiled binaries in [releases](https://github.com/Megospc/Forcell/releases).
 
 ## ⚙️ System Requirements
 + OpenGL 3.3 compatible GPU
