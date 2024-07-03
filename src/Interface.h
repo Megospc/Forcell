@@ -12,6 +12,7 @@
 #include "Simulation.h"
 #include "Render.h"
 #include "Files.h"
+#include "Images.h"
 
 #define CollapsingHeader(name) ImGui::Separator();if (ImGui::TreeNodeEx(name))
 #define CollapsingEnd ImGui::TreePop()
@@ -287,11 +288,24 @@ namespace Interface {
 
         updateFullscreen();
 
-        GUI::INI("assets/imgui.ini");
-
         if (!window->isOk()) return false;
 
+        GUI::INI("assets/imgui.ini");
+
         if (!GUI::Init(window)) return false;
+
+        { // Load icon
+            Img::Data raw = Img::Load("assets/icon.png");
+
+            Img::Data squared = Img::Square(raw);
+
+            GLFWimage image = Img::ToGLFW(squared);
+
+            window->icon(&image);
+
+            squared.destroy();
+            raw.destroy();
+        }
 
         for (uint i = 0; i < 3; i++) {
             fontMedium[i] = GUI::LoadTTF(FONT_PATH, Scale(16.0, i));

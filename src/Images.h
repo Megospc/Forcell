@@ -19,6 +19,7 @@ namespace Img {
 
         void destroy() {
             if (needdestroy) free(data);
+            else stbi_image_free(data);
         }
     };
 
@@ -64,8 +65,6 @@ namespace Img {
             result.data[i+3] = img.data[j+3];
         }
 
-        img.destroy();
-
         return result;
     }
 
@@ -75,8 +74,6 @@ namespace Img {
         result.width = img.width;
         result.height = img.height;
         result.pixels = img.data;
-
-        img.destroy();
 
         return result;
     }
