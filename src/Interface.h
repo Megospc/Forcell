@@ -24,7 +24,7 @@ namespace Interface {
     bool escaping = false;
     bool pause = false;
     bool rendering = true;
-    bool glowing = true;
+    bool glowing = false;
     bool fullscreen = false;
     bool confignoupdate = false;
 

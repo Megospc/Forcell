@@ -10,6 +10,7 @@ Version: 1.2.0 (02.07.2024)
 ## Screenshots
 <img src="images/screen1.png" width="600">
 <img src="images/screen2.png" width="600">
+<img src="images/screen3.png" width="600">
 
 ## How To Run
 ### What You Need
@@ -18,11 +19,13 @@ For Windows:
 + CMake
 + GNU Make
 
-For Ubuntu, these packages:
+For Ubuntu, theese packages:
 + gcc
 + cmake
 + libgtk-3-dev
 + make
+
+If GPU-computing enabled, the OpenCL SDK is required for both OS.
 
 ## Steps
 1. Download zip-archive with source code.
@@ -33,6 +36,10 @@ For Ubuntu, these packages:
 6. Wait for compilation to complete.
 7. The Forcell's window should open.
 8. Then you can open `Forcell.exe` (`Forcell` for Ubuntu) to run it again.
+
+## System Requirements
++ OpenGL 3.3 compatible GPU
++ OpenCL 1.0 compatible GPU (only if GPU-computing enabled)
 
 ## Dependicies
 There are these libraries used in this project:
