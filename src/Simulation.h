@@ -182,6 +182,8 @@ namespace Simulation {
                 if ((d2 < rr2 && rule->bounceForce > 0.0) || d2 < 0.0001) { // Collision
                     float d = SQRT(d2);
 
+                    if (d < 0.01) dx = 1.0, d = 1.0, dy = 0.0;
+
                     float depth = rr-d;
 
                     f = -depth/2.0/d*rule->bounceForce;

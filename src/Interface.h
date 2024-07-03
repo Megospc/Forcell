@@ -20,7 +20,7 @@
 namespace Interface {
     GL::Window* window = nullptr;
 
-    ImFont* fontMedium[4];
+    ImFont* fontMedium[3];
 
     bool escaping = false;
     bool pause = false;

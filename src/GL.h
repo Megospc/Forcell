@@ -83,7 +83,7 @@ namespace GL {
 
                     glfwSetWindowMonitor(glwindow, monitor, 0, 0, vidmode->width, vidmode->height, GLFW_DONT_CARE);
                 } else {
-                    glfwSetWindowMonitor(glwindow, NULL, 0, 0, width, height, GLFW_DONT_CARE);
+                    glfwSetWindowMonitor(glwindow, NULL, 100, 100, width, height, GLFW_DONT_CARE);
                 }
             }
 
