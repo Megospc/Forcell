@@ -256,9 +256,9 @@ namespace Interface {
 
             if (c == '\n') {
                 KeyVal data(line);
-
+                
                 if (data.key == "fullscreen") fullscreen = true;
-                if (data.key == "glowing") glowing = true;
+                if (data.key == "glowing") {glowing = true;Log(8888);}
                 if (data.key == "postprocessing") postproc = true;
 
                 if (data.key == "noupdate") confignoupdate = true;
@@ -271,7 +271,9 @@ namespace Interface {
                 if (data.key == "interface") interfacescale = strscale(data.val);
 
                 line = "";
-            } else line += c;
+            } else {
+                if (c != '\r') line += c;
+            }
         }
     }
 

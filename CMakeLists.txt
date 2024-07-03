@@ -38,7 +38,11 @@ target_link_libraries(${EXECUTABLE} PRIVATE glfw)
 target_link_libraries(${EXECUTABLE} PRIVATE nfd)
 
 if ("${CMAKE_SYSTEM_NAME}" STREQUAL "Windows")
-    set(CMAKE_CXX_FLAGS "-mwindows -static")
+    if (${OPTIMIZATIONS})
+        set(CMAKE_CXX_FLAGS "-mwindows -static")
+    else()
+        set(CMAKE_CXX_FLAGS "-static")
+    endif()
 endif()
 
 if (${OPTIMIZATIONS})
