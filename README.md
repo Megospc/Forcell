@@ -30,12 +30,11 @@ If GPU-computing enabled, the OpenCL SDK is required for both OS.
 ## Steps
 1. Download zip-archive with source code.
 2. Extract the archive.
-3. Open `CMakeLists.txt` in Notepad and configure the settings.
-4. (Only for windows) Open `run.bat` and edit compiler and GNU Make paths if needed.
-5. Open `run.bat` file (`run.sh` for Ubuntu) in terminal.
-6. Wait for compilation to complete.
-7. The Forcell's window should open.
-8. Then you can open `Forcell.exe` (`Forcell` for Ubuntu) to run it again.
+3. (Only for windows) Open `run.bat` and edit compiler and GNU Make paths if needed.
+4. Open `run.bat` file (`run.sh` for Ubuntu) in terminal.
+5. Wait for compilation to complete.
+6. The Forcell's window should open.
+7. Then you can open `Forcell.exe` (`Forcell` for Ubuntu) to run it again.
 
 ## System Requirements
 + OpenGL 3.3 compatible GPU

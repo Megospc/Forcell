@@ -28,6 +28,7 @@ namespace Interface {
     bool fullscreen = false;
     bool confignoupdate = false;
     bool postproc = false;
+    bool gpuerrorwindow = false;
 
     Simulation::Simulation* simulation = nullptr;
     Render::Render* render = nullptr;
@@ -48,6 +49,8 @@ namespace Interface {
     float wheelsensitivity = 20.0;
     int interfacescale = 1;
     int ppReducing = 3.0;
+    int computingType = 0; // 0 = CPU, 1 = GPU
+    string gpuerror = "";
 
     float Scale(float size, int scale = interfacescale) {
         return size*POW(2.0, scale);
@@ -399,6 +402,14 @@ namespace Interface {
             );
         } else GL::Clear(0.0, 0.0, 0.0);
 
+        if (computingType == 1) gpuerror = "GPU-computing hasn't released yet";
+        if (computingType == 1 && gpuerror.length() > 0) {
+            gpuerrorwindow = true;
+
+            computingType = 0;
+        }
+        
+
         if (escaping) {
             ImGui::PushFont(fontMedium[interfacescale]);
 
@@ -414,6 +425,21 @@ namespace Interface {
             ImGui::PopFont();
 
             return;
+        }
+
+        if (gpuerrorwindow) {
+            ImGui::PushFont(fontMedium[interfacescale]);
+
+            ImGui::Begin("GPU-computing error", &gpuerrorwindow);
+
+            ImGui::TextColored(ImVec4(1.0, 0.5, 0.5, 1.0), gpuerror.c_str());
+            ImGui::Text("Computing on CPU");
+
+            if (ImGui::Button("OK", buttonMedium)) gpuerrorwindow = false;
+
+            ImGui::End();
+
+            ImGui::PopFont();
         }
 
         ImGui::PushFont(fontMedium[interfacescale]);
@@ -436,30 +462,38 @@ namespace Interface {
 
             ImGui::SliderInt("##stepsperframe", &stepsperframe, 1, 5, stepsperframe == 1 ? "%d step per frame":"%d steps per frame");
 
-            ImGui::SetNextItemWidth(Scale(100.0));
-            ImGui::InputInt("CPU threads", &threadcount, 1, 8);
+            SmallOffset("pre-computing-type");
 
-            ImGui::Checkbox("Rendering", &rendering);
+            ImGui::Text("Computing on:");
+            ImGui::RadioButton("CPU", &computingType, 0);
+            ImGui::SameLine();
+            ImGui::RadioButton("GPU", &computingType, 1);
+
+            if (computingType == 0) {
+                ImGui::SetNextItemWidth(Scale(100.0));
+                ImGui::InputInt("CPU threads", &threadcount, 1, 8);
+            }
 
             CollapsingEnd;
         }
 
         CollapsingHeader("Appearence") {
-            ImGui::SetNextItemWidth(Scale(100.0));
-            ImGui::SliderFloat("Particles opacity", &particlebright, 0.0, 1.0, "%.2f");
+            ImGui::Checkbox("Rendering", &rendering);
 
-            if (postproc) {
-                ImGui::SetNextItemWidth(Scale(120.0));
-                ImGui::ColorEdit3("Color tone", colorTone);
-            }
+            if (rendering) {
+                ImGui::SetNextItemWidth(Scale(100.0));
+                ImGui::SliderFloat("Particles opacity", &particlebright, 0.0, 1.0, "%.2f");
 
-            ImGui::Checkbox("Glow effect", &glowing);
-            if (ImGui::Checkbox("Fullscreen mode", &fullscreen)) updateFullscreen();
-            if (ImGui::Checkbox("Post-processing", &postproc)) recreateRender();
+                ImGui::Checkbox("Glow effect", &glowing);
+                if (ImGui::Checkbox("Post-processing", &postproc)) recreateRender();
 
-            if (postproc) {
-                ImGui::SetNextItemWidth(Scale(120.0));
-                ImGui::SliderInt("##resolutionreducing", &ppReducing, 1.0, 5.0, "Resolution reducing x%d");
+                if (postproc) {
+                    ImGui::SetNextItemWidth(Scale(120.0));
+                    ImGui::SliderInt("##resolutionreducing", &ppReducing, 1.0, 5.0, "Resolution reducing x%d");
+
+                    ImGui::SetNextItemWidth(Scale(120.0));
+                    ImGui::ColorEdit3("Color tone", colorTone);
+                }
             }
 
             ImGui::Text("Interface scale:");
@@ -468,6 +502,9 @@ namespace Interface {
             if (ImGui::RadioButton("x2", &interfacescale, 1)) StyleRescale();
             ImGui::SameLine();
             if (ImGui::RadioButton("x4", &interfacescale, 2)) StyleRescale();
+
+            if (ImGui::Checkbox("Fullscreen mode", &fullscreen)) updateFullscreen();
+            
 
             CollapsingEnd;
         }

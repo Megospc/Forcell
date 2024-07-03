@@ -1,22 +1,5 @@
-# SETTINGS
-set(POST_PROCESSING ON)
-
-set(FRAMEBUFFER_RESOLUTION_REDUCING 1.0) # Reducing of framebuffer resolution
-# (for slow GPU, only if post-processing enabled)
-# 1.0 - don't reduce, 2.0 - reduce by 2 times, etc
-
-set(COMPUTING_TYPE "CPU")
-# CPU = Use CPU to compute
-# GPU = Use OpenCL to compute on GPU (COMING SOON)
-
 set(OPTIMIZATIONS ON) # Enable compiler optimizations
 
-
-
-
-
-
-# MAIN CODE
 cmake_minimum_required(VERSION 3.1)
 
 project(Forcell VERSION 1.2.0)
@@ -53,12 +36,6 @@ add_executable(${EXECUTABLE}
 
 target_link_libraries(${EXECUTABLE} PRIVATE glfw)
 target_link_libraries(${EXECUTABLE} PRIVATE nfd)
-
-# Adding definitions
-if (${POST_PROCESSING})
-    target_compile_definitions(${EXECUTABLE} PUBLIC POSTPROCESSING)
-    target_compile_definitions(${EXECUTABLE} PUBLIC FRAMEBUFFER_REDUCING=${FRAMEBUFFER_RESOLUTION_REDUCING})
-endif()
 
 if (${OPTIMIZATIONS})
     target_compile_definitions(${EXECUTABLE} PUBLIC OPTIMIZATIONS_ON)
