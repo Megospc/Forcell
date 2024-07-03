@@ -27,6 +27,7 @@ namespace Interface {
     bool glowing = false;
     bool fullscreen = false;
     bool confignoupdate = false;
+    bool postproc = false;
 
     Simulation::Simulation* simulation = nullptr;
     Render::Render* render = nullptr;
@@ -46,6 +47,7 @@ namespace Interface {
     float zoomsteps;
     float wheelsensitivity = 20.0;
     int interfacescale = 1;
+    int ppReducing = 3.0;
 
     float Scale(float size, int scale = interfacescale) {
         return size*POW(2.0, scale);
@@ -136,6 +138,14 @@ namespace Interface {
         return rand();
     }
 
+    void recreateRender() {
+        if (simulation == nullptr) return;
+
+        if (render != nullptr) delete render;
+        
+        render = new Render::Render(window, simulation, postproc);
+    }
+
     void start() {
         cleanup();
 
@@ -143,7 +153,7 @@ namespace Interface {
         params.seed = seed();
 
         simulation = new Simulation::Simulation(params);
-        render = new Render::Render(window, simulation);
+        render = new Render::Render(window, simulation, postproc);
     }
 
     void updateFullscreen() {
@@ -206,12 +216,14 @@ namespace Interface {
 
         if (fullscreen) str += KeyVal("fullscreen", "");
         if (glowing) str += KeyVal("glowing", "");
+        if (postproc) str += KeyVal("postprocessing", "");
 
         str += KeyVal("threads", threadcount);
         str += KeyVal("wheel", wheelsensitivity);
         str += KeyVal("width", window->getWidth());
         str += KeyVal("height", window->getHeight());
         str += KeyVal("interface", scalestr(interfacescale));
+        str += KeyVal("pp-reducing", ppReducing);
 
         File::Data data;
 
@@ -229,6 +241,7 @@ namespace Interface {
         glowing = false;
         fullscreen = false;
         confignoupdate = false;
+        postproc = false;
 
         string str = data.data;
 
@@ -242,10 +255,13 @@ namespace Interface {
 
                 if (data.key == "fullscreen") fullscreen = true;
                 if (data.key == "glowing") glowing = true;
+                if (data.key == "postprocessing") postproc = true;
+
                 if (data.key == "noupdate") confignoupdate = true;
 
                 if (data.key == "threads") threadcount = stoi(data.val);
                 if (data.key == "wheel") wheelsensitivity = stof(data.val);
+                if (data.key == "pp-reducing") ppReducing = stoi(data.val);
                 if (data.key == "width") windowwidth = stoi(data.val);
                 if (data.key == "height") windowheight = stoi(data.val);
                 if (data.key == "interface") interfacescale = strscale(data.val);
@@ -372,6 +388,8 @@ namespace Interface {
         static float colorTone[3] = { 1.0, 1.0, 1.0 };
 
         if (rendering) {
+            render->ppReducing = ppReducing;
+
             render->render(
                 camera, zoom(),
                 particlebright,
@@ -430,13 +448,19 @@ namespace Interface {
             ImGui::SetNextItemWidth(Scale(100.0));
             ImGui::SliderFloat("Particles opacity", &particlebright, 0.0, 1.0, "%.2f");
 
-            #ifdef POSTPROCESSING
-            ImGui::SetNextItemWidth(Scale(120.0));
-            ImGui::ColorEdit3("Color tone", colorTone);
-            #endif
+            if (postproc) {
+                ImGui::SetNextItemWidth(Scale(120.0));
+                ImGui::ColorEdit3("Color tone", colorTone);
+            }
 
             ImGui::Checkbox("Glow effect", &glowing);
             if (ImGui::Checkbox("Fullscreen mode", &fullscreen)) updateFullscreen();
+            if (ImGui::Checkbox("Post-processing", &postproc)) recreateRender();
+
+            if (postproc) {
+                ImGui::SetNextItemWidth(Scale(120.0));
+                ImGui::SliderInt("##resolutionreducing", &ppReducing, 1.0, 5.0, "Resolution reducing x%d");
+            }
 
             ImGui::Text("Interface scale:");
             if (ImGui::RadioButton("x1", &interfacescale, 0)) StyleRescale();
@@ -545,13 +569,6 @@ namespace Interface {
             ImGui::BulletText("Optimizations enabled");
             #else
             ImGui::BulletText("Optimizations disabled (debug build)");
-            #endif
-
-            #ifdef POSTPROCESSING
-            ImGui::BulletText("Postprocessing enabled");
-            ImGui::BulletText("Framebuffer resolution reducing: x%.1f", FRAMEBUFFER_REDUCING);
-            #else
-            ImGui::BulletText("Postprocessing disabled");
             #endif
 
             CollapsingEnd;

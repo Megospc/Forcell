@@ -6,10 +6,6 @@
 #include "Simulation.h"
 #include "Files.h"
 
-#ifndef FRAMEBUFFER_REDUCING
-#define FRAMEBUFFER_REDUCING 1.0
-#endif
-
 #define MAX_BUFFER_RESIZE_RATE 80
 
 namespace Render {
@@ -49,9 +45,10 @@ namespace Render {
 
     class Render {
         public:
-            Render(GL::Window* window, Simulation::Simulation* simulation) {
+            Render(GL::Window* window, Simulation::Simulation* simulation, bool pp) {
                 this->window = window;
                 this->simulation = simulation;
+                this->pp = pp;
 
                 GL_DEBUG_MARKER("start");
 
@@ -73,37 +70,37 @@ namespace Render {
 
                 GL_DEBUG_MARKER("created programFiller");
 
-                #ifdef POSTPROCESSING
-                programRender = loadProgram(
-                    "shaders/filltex-vertex.glsl",
-                    "shaders/render-fragment.glsl"
-                , "render");
+                if (pp) {
+                    programRender = loadProgram(
+                        "shaders/filltex-vertex.glsl",
+                        "shaders/render-fragment.glsl"
+                    , "render");
 
-                if (!programRender->isOk()) goto unsuccess;
+                    if (!programRender->isOk()) goto unsuccess;
 
-                GL_DEBUG_MARKER("created programRender");
+                    GL_DEBUG_MARKER("created programRender");
 
-                programPost1 = loadProgram(
-                    "shaders/filltex-vertex.glsl",
-                    "shaders/post1-fragment.glsl"
-                , "render");
+                    programPost1 = loadProgram(
+                        "shaders/filltex-vertex.glsl",
+                        "shaders/post1-fragment.glsl"
+                    , "render");
 
-                if (!programPost1->isOk()) goto unsuccess;
+                    if (!programPost1->isOk()) goto unsuccess;
 
-                GL_DEBUG_MARKER("created programPost1");
+                    GL_DEBUG_MARKER("created programPost1");
 
-                programPost2 = loadProgram(
-                    "shaders/filltex-vertex.glsl",
-                    "shaders/post2-fragment.glsl"
-                , "render");
+                    programPost2 = loadProgram(
+                        "shaders/filltex-vertex.glsl",
+                        "shaders/post2-fragment.glsl"
+                    , "render");
 
-                if (!programPost2->isOk()) goto unsuccess;
+                    if (!programPost2->isOk()) goto unsuccess;
 
-                GL_DEBUG_MARKER("created programPost2");
+                    GL_DEBUG_MARKER("created programPost2");
 
-                renderTexture1 = new GL::Texture2D();
-                renderTexture2 = new GL::Texture2D();
-                #endif
+                    renderTexture1 = new GL::Texture2D();
+                    renderTexture2 = new GL::Texture2D();
+                }
 
                 particleVAO = new GL::VertexArray();
                 quadVAO = new GL::VertexArray();
@@ -183,15 +180,15 @@ namespace Render {
                 delete typeBuffer;
                 delete quadVertexBuffer;
 
-                #ifdef POSTPROCESSING
-                ppCleanup();
+                if (pp) {
+                    ppCleanup();
 
-                delete programPost1;
-                delete programPost2;
-                delete programRender;
-                delete renderTexture1;
-                delete renderTexture2;
-                #endif
+                    delete programPost1;
+                    delete programPost2;
+                    delete programRender;
+                    delete renderTexture1;
+                    delete renderTexture2;
+                }
             }
 
             void render(vec2 camera, float zoom, float particlebright, vec3 clrmul, bool glowing, bool strongblur) {
@@ -200,17 +197,19 @@ namespace Render {
                 uint ww = window->getWidth();
                 uint wh = window->getHeight();
 
-                #ifdef POSTPROCESSING
-                ppCreate(); // Check for framebuffer resizing
+                float scrw, scrh;
 
-                framebuffer1->bind();
+                if (pp) {
+                    ppCreate(); // Check for framebuffer resizing
 
-                float scrw = ppWidth;
-                float scrh = ppHeight;
-                #else
-                float scrw = ww;
-                float scrh = wh;
-                #endif
+                    framebuffer1->bind();
+
+                    scrw = ppWidth;
+                    scrh = ppHeight;
+                } else {
+                    scrw = ww;
+                    scrh = wh;
+                }
 
                 // Calculate viewport
                 float simRatio = simulation->width/simulation->height;
@@ -234,8 +233,6 @@ namespace Render {
                     GL::Clear(0.0, 0.0, 0.0);
                     fill(0.0, 0.0, 0.2);
                     GL::EnableBlending(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-                    clrmul *= 1.2;
                 }
 
                 particleVAO->bind();
@@ -261,41 +258,43 @@ namespace Render {
 
                 if (glowing) GL::DisableBlending();
 
-                #ifdef POSTPROCESSING
-                framebuffer1->unbind();
+                if (pp) {
+                    framebuffer1->unbind();
 
-                glViewport(0, 0, ppWidth, ppHeight);
+                    glViewport(0, 0, ppWidth, ppHeight);
 
-                float blur1 = 1.0/600.0;
-                float blur2 = strongblur ? 1.0/300.0 : 0.0;
+                    float blur1 = 1.0/600.0;
+                    float blur2 = strongblur ? 1.0/300.0 : 0.0;
 
-                // Post processing 1
-                framebuffer2->bind();
-                programPost1->use();
-                glUniform2f(programPost1->uniform("uBlur"), blur1/scrRatio, blur1);
-                drawquad();
-                framebuffer2->unbind();
+                    // Post processing 1
+                    framebuffer2->bind();
+                    programPost1->use();
+                    glUniform2f(programPost1->uniform("uBlur"), blur1/scrRatio, blur1);
+                    drawquad();
+                    framebuffer2->unbind();
 
-                // Post processing 2
-                framebuffer1->bind();
-                programPost2->use();
-                glUniform3f(programPost2->uniform("uColorMul"), clrmul.x, clrmul.y, clrmul.z);
-                glUniform2f(programPost2->uniform("uBlur"), blur2, blur2/scrRatio);
-                drawquad();
-                framebuffer1->unbind();
+                    // Post processing 2
+                    framebuffer1->bind();
+                    programPost2->use();
+                    glUniform3f(programPost2->uniform("uColorMul"), clrmul.x, clrmul.y, clrmul.z);
+                    glUniform2f(programPost2->uniform("uBlur"), blur2, blur2/scrRatio);
+                    drawquad();
+                    framebuffer1->unbind();
 
-                // Rendering from framebuffer
+                    // Rendering from framebuffer
 
-                glViewport(0, 0, ww, wh);
+                    glViewport(0, 0, ww, wh);
 
-                programRender->use();
-                drawquad();
-                #endif
+                    programRender->use();
+                    drawquad();
+                }
 
                 GL_DEBUG_MARKER("frame "+std::to_string(frame));
 
                 frame++;
             }
+
+            float ppReducing = 1.0;
         
         private:
             bool ok;
@@ -333,7 +332,6 @@ namespace Render {
                 drawquad();
             }
 
-            #ifdef POSTPROCESSING
             GL::Program* programRender;
             GL::Program* programPost1;
             GL::Program* programPost2;
@@ -350,6 +348,8 @@ namespace Render {
             uint ppLastUpdate = 0;
             uint ppWidth = 0;
             uint ppHeight = 0;
+
+            bool pp;
 
             void ppCleanup() {
                 if (renderbuffer1 != nullptr) delete renderbuffer1;
@@ -385,8 +385,8 @@ namespace Render {
             }
 
             void ppCreate() { //  Create (recreate) framebuffer
-                uint width = (float)window->getWidth()/FRAMEBUFFER_REDUCING;
-                uint height = (float)window->getHeight()/FRAMEBUFFER_REDUCING;
+                uint width = (float)window->getWidth()/ppReducing;
+                uint height = (float)window->getHeight()/ppReducing;
 
                 if (framebuffer1 == nullptr || renderbuffer1 == nullptr || framebuffer2 == nullptr || renderbuffer2 == nullptr) goto required; // Skip tests if required
 
@@ -416,6 +416,5 @@ namespace Render {
 
                 ppLastUpdate = frame;
             }
-            #endif
     };
 }
