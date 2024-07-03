@@ -14,6 +14,8 @@ Version: 1.3.0 (03.07.2024)
 <img src="images/screen2.png" width="600">
 <img src="images/screen3.png" width="600">
 
+<video src="https://github.com/Megospc/Forcell/assets/97227980/30c19aab-7b5b-4229-ad5a-ef3bfe80a514"></video>
+
 ## ▶️ How To Run
 ### 🔧 What You Need
 For Windows:
@@ -39,6 +41,7 @@ If GPU-computing enabled, the OpenCL SDK is required for both OS.
 7. Then you can open `Forcell.exe` (`Forcell` for Ubuntu) to run it again.
 
 ## 💿 Pre-compiled Binaries
+(Only for x64 processors)
 You can download pre-compiled binaries in [releases](https://github.com/Megospc/Forcell/releases).
 
 ## ⚙️ System Requirements

@@ -164,6 +164,8 @@ namespace Interface {
         window->fullscreen(fullscreen, windowwidth, windowheight);
     }
 
+    bool keyshift = false;
+
     void keyboard(ImGuiKey key, int action) {
         if (action == GLFW_PRESS || action == GLFW_REPEAT) {
             if (key == ImGuiKey_Minus) zoomsteps -= 10.0;
@@ -172,10 +174,12 @@ namespace Interface {
             SCLAMP(zoomsteps, MIN_ZOOM, MAX_ZOOM);
 
             if (!mousedown) {
-                if (key == ImGuiKey_LeftArrow) camera.x += CAMERA_STEP/zoom();
-                if (key == ImGuiKey_RightArrow) camera.x -= CAMERA_STEP/zoom();
-                if (key == ImGuiKey_DownArrow) camera.y += CAMERA_STEP/zoom();
-                if (key == ImGuiKey_UpArrow) camera.y -= CAMERA_STEP/zoom();
+                float step = keyshift ? CAMERA_STEP/10.0:CAMERA_STEP/zoom();
+
+                if (key == ImGuiKey_LeftArrow) camera.x += step;
+                if (key == ImGuiKey_RightArrow) camera.x -= step;
+                if (key == ImGuiKey_DownArrow) camera.y += step;
+                if (key == ImGuiKey_UpArrow) camera.y -= step;
             }
         }
 
@@ -189,11 +193,23 @@ namespace Interface {
 
             if (key == ImGuiKey_R) start();
 
+            if (key == ImGuiKey_N) {
+                rule.random(seed());
+
+                start();
+            }
+
             if (key == ImGuiKey_F11) {
                 fullscreen = !fullscreen;
 
                 updateFullscreen();
             }
+
+            if (key == ImGuiKey_LeftShift) keyshift = true;
+        }
+
+        if (action == GLFW_RELEASE) {
+            if (key == ImGuiKey_LeftShift) keyshift = false;
         }
     }
 
@@ -602,10 +618,10 @@ namespace Interface {
 
         CollapsingHeader("Settings") {
             ImGui::SetNextItemWidth(Scale(100.0));
-            ImGui::DragInt("Simulation size", &params.width, 10.0, 100, 10000);
+            ImGui::DragInt("Simulation size", &params.width, 5.0, 100, 10000);
             params.height = params.width;
             ImGui::SetNextItemWidth(Scale(100.0));
-            ImGui::DragInt("Number of particles", &params.particles, 10.0, 0, 100000);
+            ImGui::DragInt("Number of particles", &params.particles, 5.0, 0, 100000);
 
             if (ImGui::Button("Restart", buttonMedium)) start();
 
