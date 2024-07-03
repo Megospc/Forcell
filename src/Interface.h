@@ -2,14 +2,6 @@
 
 #define FONT_PATH "assets/Reef/Reef.ttf"
 
-#ifndef INTERFACE_SCALE
-#define INTERFACE_SCALE 1.0
-#endif
-
-#ifndef WHEEL_STEP
-#define WHEEL_STEP 2.0
-#endif
-
 #define ZOOM_STEP 1.01
 #define MAX_ZOOM 100.0
 #define MIN_ZOOM -30.0
@@ -27,8 +19,7 @@
 namespace Interface {
     GL::Window* window = nullptr;
 
-    ImFont* fontMedium;
-    ImFont* fontSmall;
+    ImFont* fontMedium[4];
 
     bool escaping = false;
     bool pause = false;
@@ -54,6 +45,11 @@ namespace Interface {
     vec2 camera;
     float zoomsteps;
     float wheelsensitivity = 20.0;
+    int interfacescale = 1;
+
+    float Scale(float size, int scale = interfacescale) {
+        return size*POW(2.0, scale);
+    }
 
     float particlebright = 1.0;
 
@@ -187,6 +183,24 @@ namespace Interface {
         }
     }
 
+    string scalestr(int scale) {
+        switch (scale) {
+            case 0: return "x1";
+            case 1: return "x2";
+            case 2: return "x4";
+        }
+
+        return "x2";
+    }
+
+    int strscale(string str) {
+        if (str == "x1") return 0;
+        if (str == "x2") return 1;
+        if (str == "x4") return 2;
+
+        return 1;
+    }
+
     void SaveConfig() {
         string str = "";
 
@@ -197,6 +211,7 @@ namespace Interface {
         str += KeyVal("wheel", wheelsensitivity);
         str += KeyVal("width", window->getWidth());
         str += KeyVal("height", window->getHeight());
+        str += KeyVal("interface", scalestr(interfacescale));
 
         File::Data data;
 
@@ -233,10 +248,17 @@ namespace Interface {
                 if (data.key == "wheel") wheelsensitivity = stof(data.val);
                 if (data.key == "width") windowwidth = stoi(data.val);
                 if (data.key == "height") windowheight = stoi(data.val);
+                if (data.key == "interface") interfacescale = strscale(data.val);
 
                 line = "";
             } else line += c;
         }
+    }
+
+    void StyleRescale() {
+        GUI::style->FrameRounding = Scale(5.0);
+        GUI::style->GrabRounding = Scale(5.0);
+        GUI::style->WindowRounding = Scale(5.0);
     }
 
     bool Init() {
@@ -252,8 +274,9 @@ namespace Interface {
 
         if (!GUI::Init(window)) return false;
 
-        fontMedium = GUI::LoadTTF(FONT_PATH, 16.0*INTERFACE_SCALE);
-        fontSmall = GUI::LoadTTF(FONT_PATH, 8.0*INTERFACE_SCALE);
+        for (uint i = 0; i < 3; i++) {
+            fontMedium[i] = GUI::LoadTTF(FONT_PATH, Scale(16.0, i));
+        }
 
         Input::Window(window);
         Input::Keyboard(keyboard);
@@ -261,16 +284,14 @@ namespace Interface {
         Input::MouseButton(mousebtn);
         Input::MouseWheel(mousewheel);
 
+        StyleRescale();
+
         start();
 
         zoomsteps = 0.0;
         camera = vec2(0.0, 0.0);
 
         lastsecond = time(NULL);
-
-        GUI::style->FrameRounding = 5.0*INTERFACE_SCALE;
-        GUI::style->GrabRounding = 5.0*INTERFACE_SCALE;
-        GUI::style->WindowRounding = 5.0*INTERFACE_SCALE;
 
         threadcount = Simulation::GetThreads();
 
@@ -296,10 +317,8 @@ namespace Interface {
         );
     }
 
-    void SmallOffset() {
-        ImGui::PushFont(fontSmall);
-        ImGui::NewLine();
-        ImGui::PopFont();
+    void SmallOffset(string id) {
+        ImGui::InvisibleButton(("smalloffset"+id).c_str(), ImVec2(10.0, Scale(8.0)));
     }
 
     void RuleTable(cstr id, float* ptr, float min, float max, float speed, cstr fmt) {
@@ -307,7 +326,7 @@ namespace Interface {
             id,
             rule.types+2,
             ImGuiTableFlags_Borders | ImGuiTableFlags_ScrollX | ImGuiTableFlags_ScrollY,
-            ImVec2(180.0*INTERFACE_SCALE, 140.0*INTERFACE_SCALE)
+            ImVec2(Scale(180.0), Scale(140.0))
         )) {
             ImGui::TableSetupScrollFreeze(1, 1);
             
@@ -317,19 +336,19 @@ namespace Interface {
                 if (j >= 0) {
                     ImGui::TableSetColumnIndex(0);
 
-                    ColorLabel(string("##rownames")+id+std::to_string(j), GetTypeColor(j), ImVec2(28.0*INTERFACE_SCALE, 18.0*INTERFACE_SCALE));
+                    ColorLabel(string("##rownames")+id+std::to_string(j), GetTypeColor(j), ImVec2(Scale(28.0), Scale(18.0)));
 
                     for (uint i = 0; i < rule.types; i++) {
                         ImGui::TableSetColumnIndex(i+1);
 
-                        ImGui::SetNextItemWidth(30.0*INTERFACE_SCALE);
+                        ImGui::SetNextItemWidth(Scale(30.0));
                         ImGui::DragFloat((string("##")+id+std::to_string(i)+"-"+std::to_string(j)).c_str(), &ptr[i+j*10], speed, min, max, fmt);
                     }
                 } else {
                     for (uint i = 0; i < rule.types; i++) {
                         ImGui::TableSetColumnIndex(i+1);
 
-                        ColorLabel(string("##columnnames")+id+std::to_string(i), GetTypeColor(i), ImVec2(28.0*INTERFACE_SCALE, 18.0*INTERFACE_SCALE));
+                        ColorLabel(string("##columnnames")+id+std::to_string(i), GetTypeColor(i), ImVec2(Scale(28.0), Scale(18.0)));
                     }
                 }
             }
@@ -339,10 +358,10 @@ namespace Interface {
     }
     
     void frame() {
-        ImVec2 buttonTiny = ImVec2(18.0*INTERFACE_SCALE, 18.0*INTERFACE_SCALE);
-        ImVec2 buttonShort = ImVec2(40.0*INTERFACE_SCALE, 18.0*INTERFACE_SCALE);
-        ImVec2 buttonMedium = ImVec2(80.0*INTERFACE_SCALE, 18.0*INTERFACE_SCALE);
-        ImVec2 buttonDouble = ImVec2(160.0*INTERFACE_SCALE+GUI::style->ItemSpacing.x, 18.0*INTERFACE_SCALE);
+        ImVec2 buttonTiny = ImVec2(Scale(18.0), Scale(18.0));
+        ImVec2 buttonShort = ImVec2(Scale(40.0), Scale(18.0));
+        ImVec2 buttonMedium = ImVec2(Scale(80.0), Scale(18.0));
+        ImVec2 buttonDouble = ImVec2(Scale(160.0)+GUI::style->ItemSpacing.x, Scale(18.0));
 
         if (!pause) for (uint i = 0; i < stepsperframe; i++) {
             simulation->step(threadcount);
@@ -363,7 +382,7 @@ namespace Interface {
         } else GL::Clear(0.0, 0.0, 0.0);
 
         if (escaping) {
-            ImGui::PushFont(fontMedium);
+            ImGui::PushFont(fontMedium[interfacescale]);
 
             ImGui::Begin("Quit");
             ImGui::Text("Are you sure you really wish to quit the app?");
@@ -379,7 +398,7 @@ namespace Interface {
             return;
         }
 
-        ImGui::PushFont(fontMedium);
+        ImGui::PushFont(fontMedium[interfacescale]);
 
         ImGui::Begin("Forcell");
 
@@ -389,17 +408,17 @@ namespace Interface {
 
         ImGui::Text("Time steps: %d", simulation->frame);
 
-        SmallOffset();
+        SmallOffset("pre-headers");
 
         CollapsingHeader("Performance") {
             ImGui::Text("Frames per second: %d", fps);
             ImGui::Text("Steps  per second: %d", sps);
 
-            ImGui::SetNextItemWidth(100.0*INTERFACE_SCALE);
+            ImGui::SetNextItemWidth(Scale(100.0));
 
             ImGui::SliderInt("##stepsperframe", &stepsperframe, 1, 5, stepsperframe == 1 ? "%d step per frame":"%d steps per frame");
 
-            ImGui::SetNextItemWidth(100.0*INTERFACE_SCALE);
+            ImGui::SetNextItemWidth(Scale(100.0));
             ImGui::InputInt("CPU threads", &threadcount, 1, 8);
 
             ImGui::Checkbox("Rendering", &rendering);
@@ -408,16 +427,23 @@ namespace Interface {
         }
 
         CollapsingHeader("Appearence") {
-            ImGui::SetNextItemWidth(100.0*INTERFACE_SCALE);
+            ImGui::SetNextItemWidth(Scale(100.0));
             ImGui::SliderFloat("Particles opacity", &particlebright, 0.0, 1.0, "%.2f");
 
             #ifdef POSTPROCESSING
-            ImGui::SetNextItemWidth(120.0*INTERFACE_SCALE);
+            ImGui::SetNextItemWidth(Scale(120.0));
             ImGui::ColorEdit3("Color tone", colorTone);
             #endif
 
             ImGui::Checkbox("Glow effect", &glowing);
             if (ImGui::Checkbox("Fullscreen mode", &fullscreen)) updateFullscreen();
+
+            ImGui::Text("Interface scale:");
+            if (ImGui::RadioButton("x1", &interfacescale, 0)) StyleRescale();
+            ImGui::SameLine();
+            if (ImGui::RadioButton("x2", &interfacescale, 1)) StyleRescale();
+            ImGui::SameLine();
+            if (ImGui::RadioButton("x4", &interfacescale, 2)) StyleRescale();
 
             CollapsingEnd;
         }
@@ -427,14 +453,14 @@ namespace Interface {
             ImGui::SameLine();
             if (ImGui::Button("Reset##resetcamera", buttonMedium)) camera = vec2(0.0, 0.0);
 
-            ImGui::SetNextItemWidth(60.0*INTERFACE_SCALE);
+            ImGui::SetNextItemWidth(Scale(60.0));
             ImGui::SliderFloat("##zoom", &zoomsteps, MIN_ZOOM, MAX_ZOOM, "");
             ImGui::SameLine();
             ImGui::Text("Zoom: %.2f", zoom());
             ImGui::SameLine();
             if (ImGui::Button("Reset##resetzoom", buttonMedium)) zoomsteps = 0.0;
 
-            ImGui::SetNextItemWidth(60.0*INTERFACE_SCALE);
+            ImGui::SetNextItemWidth(Scale(60.0));
             ImGui::DragFloat("Mouse wheel sensitivity", &wheelsensitivity, 0.05, 0.0, 1000.0, "%.1f");
 
             CollapsingEnd;
@@ -450,25 +476,25 @@ namespace Interface {
                 start();
             }
 
-            SmallOffset();
+            SmallOffset("rule-pre-params");
 
-            ImGui::SetNextItemWidth(100.0*INTERFACE_SCALE);
+            ImGui::SetNextItemWidth(Scale(100.0));
             ImGui::InputInt("Number of types", &rule.types, 1, 1);
-            ImGui::SetNextItemWidth(100.0*INTERFACE_SCALE);
+            ImGui::SetNextItemWidth(Scale(100.0));
             ImGui::DragFloat("Friction", &rule.friction, 0.0002, 0.0, 1.0, "%.3f");
-            ImGui::SetNextItemWidth(100.0*INTERFACE_SCALE);
+            ImGui::SetNextItemWidth(Scale(100.0));
             ImGui::DragFloat("Attractor", &rule.attractor, 0.000001, 0.0, 1.0, "%.5f");
-            ImGui::SetNextItemWidth(100.0*INTERFACE_SCALE);
+            ImGui::SetNextItemWidth(Scale(100.0));
             ImGui::DragFloat("Bounce force", &rule.bounceForce, 0.001, 0.0, 1.0, "%.2f");
 
-            SmallOffset();
+            SmallOffset("rule-pre-forces");
 
             CollapsingHeader("Forces") {
                 RuleTable("forcetable", rule.forces, -1.0, 1.0, 0.001, "%.2f");
 
                 CollapsingEnd;
 
-                SmallOffset();
+                SmallOffset("rule-after-forces");
             }
 
             CollapsingHeader("Max. interaction distances") {
@@ -476,15 +502,15 @@ namespace Interface {
 
                 CollapsingEnd;
 
-                SmallOffset();
+                SmallOffset("rule-after-zones");
             }
 
             CollapsingHeader("Frequencies") {
                 for (uint i = 0; i < rule.types; i++) {
-                    ImGui::SetNextItemWidth(100.0*INTERFACE_SCALE);
+                    ImGui::SetNextItemWidth(Scale(100.0));
                     ImGui::DragFloat(("##freqs"+std::to_string(i)).c_str(), &rule.freqs[i], 0.002, 0.0, 10.0, "%.2f");
                     ImGui::SameLine();
-                    ColorLabel("##freqsclr"+std::to_string(i), GetTypeColor(i), ImVec2(60.0*INTERFACE_SCALE, 18.0*INTERFACE_SCALE));
+                    ColorLabel("##freqsclr"+std::to_string(i), GetTypeColor(i), ImVec2(Scale(60.0), Scale(18.0)));
                 }
 
                 if (ImGui::Button("Reset", buttonMedium)) {
@@ -498,10 +524,10 @@ namespace Interface {
         }
 
         CollapsingHeader("Settings") {
-            ImGui::SetNextItemWidth(100.0*INTERFACE_SCALE);
+            ImGui::SetNextItemWidth(Scale(100.0));
             ImGui::DragInt("Simulation size", &params.width, 10.0, 100, 10000);
             params.height = params.width;
-            ImGui::SetNextItemWidth(100.0*INTERFACE_SCALE);
+            ImGui::SetNextItemWidth(Scale(100.0));
             ImGui::DragInt("Number of particles", &params.particles, 10.0, 0, 100000);
 
             if (ImGui::Button("Restart", buttonMedium)) start();
@@ -531,7 +557,7 @@ namespace Interface {
             CollapsingEnd;
         }
         
-        SmallOffset();
+        SmallOffset("pre-copyright");
 
         ImGui::Text("Copyright (c) 2024 Megospc");
         

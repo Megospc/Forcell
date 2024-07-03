@@ -61,8 +61,15 @@ namespace GUI {
     }
 
     void (*framefn)(void);
+    void (*called)(void) = NULL;
 
     void frameCallback() {
+        if (called) {
+            called();
+            
+            called = NULL;
+        }
+
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
@@ -78,6 +85,10 @@ namespace GUI {
         framefn = callback;
 
         window->begin(frameCallback);
+    }
+
+    void Call(void (*callback)(void)) {
+        called = callback;
     }
 
     ImFont* LoadTTF(cstr path, uint size) {

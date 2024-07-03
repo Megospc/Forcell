@@ -1,6 +1,4 @@
 # SETTINGS
-set(INTERFACE_SCALING 2.0) # Interface scaling
-
 set(POST_PROCESSING ON)
 
 set(FRAMEBUFFER_RESOLUTION_REDUCING 1.0) # Reducing of framebuffer resolution
@@ -57,22 +55,9 @@ target_link_libraries(${EXECUTABLE} PRIVATE glfw)
 target_link_libraries(${EXECUTABLE} PRIVATE nfd)
 
 # Adding definitions
-if (${FULL_SCREEN})
-    target_compile_definitions(${EXECUTABLE} PUBLIC FULLSCREEN)
-endif()
-
-target_compile_definitions(${EXECUTABLE} PUBLIC WINDOW_WIDTH=${WINDOW_WIDTH})
-target_compile_definitions(${EXECUTABLE} PUBLIC WINDOW_HEIGHT=${WINDOW_HEIGHT})
-target_compile_definitions(${EXECUTABLE} PUBLIC INTERFACE_SCALE=${INTERFACE_SCALING})
-target_compile_definitions(${EXECUTABLE} PUBLIC WHEEL_STEP=${WHEEL_SENSITIVITY})
-
 if (${POST_PROCESSING})
     target_compile_definitions(${EXECUTABLE} PUBLIC POSTPROCESSING)
     target_compile_definitions(${EXECUTABLE} PUBLIC FRAMEBUFFER_REDUCING=${FRAMEBUFFER_RESOLUTION_REDUCING})
-endif()
-
-if ("${COMPUTING_TYPE}" STREQUAL "CPU")
-    target_compile_definitions(${EXECUTABLE} PUBLIC SIMULATION_THREADS=${THREADS_COUNT})
 endif()
 
 if (${OPTIMIZATIONS})
