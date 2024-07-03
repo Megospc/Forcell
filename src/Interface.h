@@ -151,17 +151,17 @@ namespace Interface {
     }
 
     void keyboard(ImGuiKey key, int action) {
-        if (action == GLFW_PRESS || action == GLFW_RELEASE) {
-            if (key == ImGuiKey_Minus) zoomsteps -= 1.0;
-            if (key == ImGuiKey_Equal) zoomsteps += 1.0;
+        if (action == GLFW_PRESS || action == GLFW_REPEAT) {
+            if (key == ImGuiKey_Minus) zoomsteps -= 10.0;
+            if (key == ImGuiKey_Equal) zoomsteps += 10.0;
 
             SCLAMP(zoomsteps, MIN_ZOOM, MAX_ZOOM);
 
             if (!mousedown) {
-                if (key == ImGuiKey_LeftArrow) camera.x -= CAMERA_STEP/zoom();
-                if (key == ImGuiKey_RightArrow) camera.x += CAMERA_STEP/zoom();
-                if (key == ImGuiKey_DownArrow) camera.y -= CAMERA_STEP/zoom();
-                if (key == ImGuiKey_UpArrow) camera.y += CAMERA_STEP/zoom();
+                if (key == ImGuiKey_LeftArrow) camera.x += CAMERA_STEP/zoom();
+                if (key == ImGuiKey_RightArrow) camera.x -= CAMERA_STEP/zoom();
+                if (key == ImGuiKey_DownArrow) camera.y += CAMERA_STEP/zoom();
+                if (key == ImGuiKey_UpArrow) camera.y -= CAMERA_STEP/zoom();
             }
         }
 
