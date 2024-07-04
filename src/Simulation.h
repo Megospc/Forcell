@@ -179,7 +179,7 @@ namespace Simulation {
 
             void task1table(uint, uint);
             void task2table(uint, uint);
-            void step(uint);
+            void step(uint, float);
 
             float width, height;
 
@@ -291,7 +291,7 @@ namespace Simulation {
         }
     }
 
-    void Simulation::step(uint threadcount) {
+    void Simulation::step(uint threadcount, float speedup) {
         std::thread* threads[MAX_SIMULATION_THREADS];
 
         float curstart = 0.0;
@@ -316,11 +316,11 @@ namespace Simulation {
         for (uint i = 0; i < particlesCount; i++) {
             Particle* a = &particles[i];
 
-            a->x += a->vx;
-            a->y += a->vy;
+            a->x += a->vx*speedup;
+            a->y += a->vy*speedup;
 
-            a->vx -= (a->x-width/2.0)*rule->attractor;
-            a->vy -= (a->y-height/2.0)*rule->attractor;
+            a->vx -= (a->x-width/2.0)*rule->attractor*speedup;
+            a->vy -= (a->y-height/2.0)*rule->attractor*speedup;
 
             a->vx *= 1.0-rule->friction;
             a->vy *= 1.0-rule->friction;

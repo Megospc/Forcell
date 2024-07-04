@@ -53,6 +53,8 @@ namespace Interface {
     int computingType = 0; // 0 = CPU, 1 = GPU
     string gpuerror = "";
 
+    float speedup = 1.0;
+
     float Scale(float size, int scale = interfacescale) {
         return size*POW(2.0, scale);
     }
@@ -415,7 +417,7 @@ namespace Interface {
         ImVec2 buttonDouble = ImVec2(Scale(160.0)+GUI::style->ItemSpacing.x, Scale(18.0));
 
         if (!pause) for (uint i = 0; i < stepsperframe; i++) {
-            simulation->step(threadcount);
+            simulation->step(threadcount, speedup);
 
             stepcount++;
         }
@@ -505,6 +507,13 @@ namespace Interface {
                 ImGui::SetNextItemWidth(Scale(100.0));
                 ImGui::InputInt("CPU threads", &threadcount, 1, 8);
             }
+
+            SmallOffset("pree-speedup");
+
+            ImGui::SetNextItemWidth(Scale(50.0));
+            ImGui::DragFloat("Speed-up", &speedup, 0.0005, 1.0, 2.0, "x%.1f");
+            ImGui::SameLine();
+            ImGui::TextColored(ImVec4(1.0, 1.0, 0.2, 1.0), "unrecommended");
 
             CollapsingEnd;
         }
