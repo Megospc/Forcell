@@ -598,6 +598,26 @@ namespace Interface {
                 SmallOffset("rule-after-zones");
             }
 
+            ImGui::Checkbox("Second force table", &rule.secondtable);
+
+            if (rule.secondtable) {
+                CollapsingHeader("Forces 2") {
+                    RuleTable("forcetable2", rule.forces2, -2.0, 2.0, 0.001, "%.2f");
+
+                    CollapsingEnd;
+
+                    SmallOffset("rule-after-forces2");
+                }
+
+                CollapsingHeader("Max. interaction distances 2") {
+                    RuleTable("zonetable2", rule.zones2, 0.0, 10000.0, 1.0, "%.0f");
+
+                    CollapsingEnd;
+
+                    SmallOffset("rule-after-zones2");
+                }
+            }
+
             CollapsingHeader("Frequencies") {
                 for (uint i = 0; i < rule.types; i++) {
                     ImGui::SetNextItemWidth(Scale(100.0));

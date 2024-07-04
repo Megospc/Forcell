@@ -43,6 +43,34 @@ namespace Simulation {
             1000.0, 1000.0, 1000.0, 1000.0, 1000.0, 1000.0, 1000.0, 1000.0, 1000.0, 1000.0,
         };
 
+        bool secondtable = false;
+
+        float forces2[100] = {
+            0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+            0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+            0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+            0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+            0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+            0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+            0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+            0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+            0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+            0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+        };
+
+        float zones2[100] = {
+            1000.0, 1000.0, 1000.0, 1000.0, 1000.0, 1000.0, 1000.0, 1000.0, 1000.0, 1000.0,
+            1000.0, 1000.0, 1000.0, 1000.0, 1000.0, 1000.0, 1000.0, 1000.0, 1000.0, 1000.0,
+            1000.0, 1000.0, 1000.0, 1000.0, 1000.0, 1000.0, 1000.0, 1000.0, 1000.0, 1000.0,
+            1000.0, 1000.0, 1000.0, 1000.0, 1000.0, 1000.0, 1000.0, 1000.0, 1000.0, 1000.0,
+            1000.0, 1000.0, 1000.0, 1000.0, 1000.0, 1000.0, 1000.0, 1000.0, 1000.0, 1000.0,
+            1000.0, 1000.0, 1000.0, 1000.0, 1000.0, 1000.0, 1000.0, 1000.0, 1000.0, 1000.0,
+            1000.0, 1000.0, 1000.0, 1000.0, 1000.0, 1000.0, 1000.0, 1000.0, 1000.0, 1000.0,
+            1000.0, 1000.0, 1000.0, 1000.0, 1000.0, 1000.0, 1000.0, 1000.0, 1000.0, 1000.0,
+            1000.0, 1000.0, 1000.0, 1000.0, 1000.0, 1000.0, 1000.0, 1000.0, 1000.0, 1000.0,
+            1000.0, 1000.0, 1000.0, 1000.0, 1000.0, 1000.0, 1000.0, 1000.0, 1000.0, 1000.0,
+        };
+
         float freqs[10] = { 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0 };
 
         void clamp() {
@@ -62,6 +90,14 @@ namespace Simulation {
                 float r = Rand::Range(0.0, SQRT(1000.0));
 
                 zones[i] = r*r;
+
+                float f2 = Rand::Range(0.0, 1.0);
+
+                forces2[i] = Rand::Sign()*f2*f2-forces[i];
+
+                float r2 = Rand::Range(0.0, SQRT(1000.0));
+
+                zones2[i] = r2*r2;
             }
 
             friction = Rand::Range(0.001, 0.100);
@@ -141,7 +177,8 @@ namespace Simulation {
                 free(particles);
             }
 
-            void _task(uint, uint);
+            void task1table(uint, uint);
+            void task2table(uint, uint);
             void step(uint);
 
             float width, height;
@@ -157,10 +194,11 @@ namespace Simulation {
     };
 
     void task(Simulation* self, uint start, uint end) {
-        self->_task(start, end);
+        if (self->rule->secondtable) self->task2table(start, end);
+        else self->task1table(start, end);
     }
 
-    void Simulation::_task(uint start, uint end) {
+    void Simulation::task1table(uint start, uint end) {
         for (uint i = start; i < end; i++) {
             Particle* a = &particles[i];
 
@@ -196,6 +234,55 @@ namespace Simulation {
                     if (d2 > maxd2) continue;
 
                     f = rule->forces[ruleidx]/d2;
+                }
+
+                a->vx += dx*f;
+                a->vy += dy*f;
+            }
+        }
+    }
+
+    void Simulation::task2table(uint start, uint end) {
+        for (uint i = start; i < end; i++) {
+            Particle* a = &particles[i];
+
+            for (uint j = 0; j < particlesCount; j++) {
+                if (i == j) continue;
+
+                Particle* b = &particles[j];
+
+                float dx = b->x-a->x;
+                float dy = b->y-a->y;
+
+                float d2 = dx*dx+dy*dy;
+
+                float rr = a->size+b->size;
+                float rr2 = rr*rr;
+
+                float f; // Force
+
+                if ((d2 < rr2 && rule->bounceForce > 0.0) || d2 < 0.0001) { // Collision
+                    float d = SQRT(d2);
+
+                    if (d < 0.01) dx = 1.0, d = 1.0, dy = 0.0;
+
+                    float depth = rr-d;
+
+                    f = -depth/2.0/d*rule->bounceForce;
+                } else {
+                    uint ruleidx = a->type*10+b->type;
+
+                    f = 0.0;
+
+                    float max1d = rule->zones[ruleidx];
+                    float max1d2 = max1d*max1d;
+
+                    if (d2 <= max1d2) f += rule->forces[ruleidx]/d2;
+
+                    float max2d = rule->zones2[ruleidx];
+                    float max2d2 = max2d*max2d;
+
+                    if (d2 <= max2d2) f += rule->forces2[ruleidx]/d2;
                 }
 
                 a->vx += dx*f;
