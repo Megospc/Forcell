@@ -240,8 +240,8 @@ namespace Interface {
 
         str += KeyVal("threads", threadcount);
         str += KeyVal("wheel", wheelsensitivity);
-        str += KeyVal("width", window->getWidth());
-        str += KeyVal("height", window->getHeight());
+        str += KeyVal("width", windowwidth);
+        str += KeyVal("height", windowheight);
         str += KeyVal("interface", scalestr(interfacescale));
         str += KeyVal("pp-reducing", ppReducing);
 
@@ -683,6 +683,11 @@ namespace Interface {
             framecount = 0;
 
             lastsecond = cursecond;
+        }
+
+        if (!fullscreen) {
+            windowwidth = window->getWidth();
+            windowheight = window->getHeight();
         }
     }
 
