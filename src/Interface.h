@@ -13,6 +13,7 @@
 #include "Render.h"
 #include "Files.h"
 #include "Images.h"
+#include "Saver.h"
 
 #define CollapsingHeader(name) ImGui::Separator();if (ImGui::TreeNodeEx(name))
 #define CollapsingEnd ImGui::TreePop()
@@ -536,9 +537,12 @@ namespace Interface {
         }
 
         CollapsingHeader("Rule") {
-            //if (ImGui::Button("Export", buttonMedium));
-            //ImGui::SameLine();
-            //if (ImGui::Button("Import", buttonMedium));
+            if (ImGui::Button("Export", buttonMedium)) Saver::Save(&rule);
+            ImGui::SameLine();
+            if (ImGui::Button("Import", buttonMedium)) {
+                Saver::Open(&rule);
+                start();
+            }
 
             if (ImGui::Button("Randomize", buttonDouble)) {
                 rule.random(seed());
@@ -559,7 +563,7 @@ namespace Interface {
             SmallOffset("rule-pre-forces");
 
             CollapsingHeader("Forces") {
-                RuleTable("forcetable", rule.forces, -1.0, 1.0, 0.001, "%.2f");
+                RuleTable("forcetable", rule.forces, -2.0, 2.0, 0.001, "%.2f");
 
                 CollapsingEnd;
 
@@ -578,7 +582,7 @@ namespace Interface {
 
             if (rule.secondtable) {
                 CollapsingHeader("Forces 2") {
-                    RuleTable("forcetable2", rule.forces2, -2.0, 2.0, 0.001, "%.2f");
+                    RuleTable("forcetable2", rule.forces2, -4.0, 4.0, 0.001, "%.2f");
 
                     CollapsingEnd;
 

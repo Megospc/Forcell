@@ -83,7 +83,7 @@ namespace Simulation {
             for (uint i = 0; i < 10; i++) freqs[i] = Rand::Range(0.01, 1.00);
 
             for (uint i = 0; i < 100; i++) {
-                float f = Rand::Range(0.0, 1.0);
+                float f = Rand::Range(0.0, 3.0);
 
                 forces[i] = Rand::Sign()*f*f;
 
@@ -91,7 +91,7 @@ namespace Simulation {
 
                 zones[i] = r*r;
 
-                float f2 = Rand::Range(0.0, 1.0);
+                float f2 = Rand::Range(0.0, 3.0);
 
                 forces2[i] = Rand::Sign()*f2*f2-forces[i];
 
@@ -102,7 +102,7 @@ namespace Simulation {
 
             friction = Rand::Range(0.001, 0.100);
             attractor = 0.0;
-            bounceForce = Rand::Range(0.5, 1.0);
+            bounceForce = Rand::Range(0.1, 0.4);
         }
     };
 
@@ -218,9 +218,10 @@ namespace Simulation {
                 float f; // Force
 
                 if ((d2 < rr2 && rule->bounceForce > 0.0) || d2 < 0.0001) { // Collision
-                    float d = SQRT(d2);
+                    float d;
 
-                    if (d < 0.01) dx = 1.0, d = 1.0, dy = 0.0;
+                    if (d2 < 0.001) dx = 1.0, d2 = 1.0, d = 1.0, dy = 0.0;
+                    else d = SQRT(d2);
 
                     float depth = rr-d;
 
