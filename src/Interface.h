@@ -29,7 +29,6 @@ namespace Interface {
     bool fullscreen = false;
     bool confignoupdate = false;
     bool postproc = false;
-    bool gpuerrorwindow = false;
 
     Simulation::Simulation* simulation = nullptr;
     Render::Render* render = nullptr;
@@ -50,8 +49,6 @@ namespace Interface {
     float wheelsensitivity = 20.0;
     int interfacescale = 1;
     int ppReducing = 3.0;
-    int computingType = 0; // 0 = CPU, 1 = GPU
-    string gpuerror = "";
 
     float speedup = 1.0;
 
@@ -436,14 +433,6 @@ namespace Interface {
             );
         } else GL::Clear(0.0, 0.0, 0.0);
 
-        if (computingType == 1) gpuerror = "OpenCL-computing hasn't released yet";
-
-        if (computingType == 1 && gpuerror.length() > 0) {
-            gpuerrorwindow = true;
-
-            computingType = 0;
-        }
-
         if (escaping) {
             ImGui::PushFont(fontMedium[interfacescale]);
 
@@ -459,21 +448,6 @@ namespace Interface {
             ImGui::PopFont();
 
             return;
-        }
-
-        if (gpuerrorwindow) {
-            ImGui::PushFont(fontMedium[interfacescale]);
-
-            ImGui::Begin("OpenCL error", &gpuerrorwindow);
-
-            ImGui::TextColored(ImVec4(1.0, 0.5, 0.5, 1.0), gpuerror.c_str());
-            ImGui::Text("Fellback to Default computing");
-
-            if (ImGui::Button("OK", buttonMedium)) gpuerrorwindow = false;
-
-            ImGui::End();
-
-            ImGui::PopFont();
         }
 
         ImGui::PushFont(fontMedium[interfacescale]);
@@ -495,20 +469,13 @@ namespace Interface {
             ImGui::SetNextItemWidth(Scale(100.0));
 
             ImGui::SliderInt("##stepsperframe", &stepsperframe, 1, 5, stepsperframe == 1 ? "%d step per frame":"%d steps per frame");
+            
+            SmallOffset("pre-threads");
 
-            SmallOffset("pre-computing-type");
+            ImGui::SetNextItemWidth(Scale(100.0));
+            ImGui::InputInt("CPU threads", &threadcount, 1, 8);
 
-            ImGui::Text("Computing type:");
-            ImGui::RadioButton("Default", &computingType, 0);
-            ImGui::SameLine();
-            ImGui::RadioButton("OpenCL", &computingType, 1);
-
-            if (computingType == 0) {
-                ImGui::SetNextItemWidth(Scale(100.0));
-                ImGui::InputInt("CPU threads", &threadcount, 1, 8);
-            }
-
-            SmallOffset("pree-speedup");
+            SmallOffset("pre-speedup");
 
             ImGui::SetNextItemWidth(Scale(50.0));
             ImGui::DragFloat("Speed-up", &speedup, 0.0005, 1.0, 2.0, "x%.1f");

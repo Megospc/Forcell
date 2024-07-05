@@ -1,5 +1,5 @@
 <h1 align="center">🧲 Forcell 🧬</h1>
-Forcell is a particle life simulation with new features and GPU computing via OpenCL.
+Forcell is a particle life simulation with new features and Multi-threaded computing on CPU.
 
 Version: 1.3.0 (03.07.2024)
 
@@ -33,8 +33,6 @@ For Ubuntu, these packages:
 + libgtk-3-dev
 + make
 
-If OpenCL-computing enabled, the OpenCL SDK is required for both OS.
-
 ### 📄 Steps
 1. Download zip-archive with source code.\
    <img src="images/install1.png" width="600">
@@ -55,7 +53,6 @@ bash ./run.sh
 
 ## ⚙️ System Requirements
 + OpenGL 3.3 compatible GPU
-+ OpenCL 1.0 compatible GPU (only if GPU-computing enabled)
 
 ## 😃 Dependicies
 There are these libraries used in this project:
