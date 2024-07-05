@@ -4,8 +4,8 @@
 #include <chrono>
 
 namespace Logger {
-    #define Error(log) std::cerr << log << "\n"
-    #define Log(log) std::cout << log << "\n"
+    #define Error(log) std::cerr << log << std::endl
+    #define Log(log) std::cout << log << std::endl
 
     namespace Bench { // Benchmarking
         using namespace std::chrono;

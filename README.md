@@ -16,10 +16,14 @@ Version: 1.3.0 (03.07.2024)
 
 <video src="https://github.com/Megospc/Forcell/assets/97227980/30c19aab-7b5b-4229-ad5a-ef3bfe80a514"></video>
 
-## ▶️ How To Run
+## 💿 Pre-compiled Binaries
+(Only for x64 processors)
+You can download pre-compiled binaries in [releases](https://github.com/Megospc/Forcell/releases).
+
+## ▶️ How To Build
 ### 🔧 What You Need
 For Windows:
-+ MinGW-W64
++ MinGW-w64
 + CMake
 + GNU Make
 
@@ -29,20 +33,25 @@ For Ubuntu, these packages:
 + libgtk-3-dev
 + make
 
-If GPU-computing enabled, the OpenCL SDK is required for both OS.
+If OpenCL-computing enabled, the OpenCL SDK is required for both OS.
 
 ### 📄 Steps
-1. Download zip-archive with source code.
+1. Download zip-archive with source code.\
+   <img src="images/install1.png" width="600">
 2. Extract the archive.
-3. (Only for windows) Open `run.bat` and edit compiler and GNU Make paths if needed.
-4. Open `run.bat` file (`run.sh` for Ubuntu) in terminal.
-5. Wait for compilation to complete.
-6. The Forcell's window should open.
-7. Then you can open `Forcell.exe` (`Forcell` for Ubuntu) to run it again.
+3. (Only for windows) Open `run.bat` in Notepad and edit compiler and make paths if needed.
+4. Open folder with `CMakeLists.txt` in terminal.
+5. Enter these commands:
+```Bash
+# Ubuntu
+bash ./run.sh
 
-## 💿 Pre-compiled Binaries
-(Only for x64 processors)
-You can download pre-compiled binaries in [releases](https://github.com/Megospc/Forcell/releases).
+# Windows:
+./run.bat
+```
+6. Wait for compilation to complete.
+7. The Forcell's window should open.
+8. Then you can open `Forcell.exe` (`Forcell` for Ubuntu) to run it again.
 
 ## ⚙️ System Requirements
 + OpenGL 3.3 compatible GPU

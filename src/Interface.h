@@ -436,13 +436,13 @@ namespace Interface {
             );
         } else GL::Clear(0.0, 0.0, 0.0);
 
-        if (computingType == 1) gpuerror = "GPU-computing hasn't released yet";
+        if (computingType == 1) gpuerror = "OpenCL-computing hasn't released yet";
+
         if (computingType == 1 && gpuerror.length() > 0) {
             gpuerrorwindow = true;
 
             computingType = 0;
         }
-        
 
         if (escaping) {
             ImGui::PushFont(fontMedium[interfacescale]);
@@ -464,10 +464,10 @@ namespace Interface {
         if (gpuerrorwindow) {
             ImGui::PushFont(fontMedium[interfacescale]);
 
-            ImGui::Begin("GPU-computing error", &gpuerrorwindow);
+            ImGui::Begin("OpenCL error", &gpuerrorwindow);
 
             ImGui::TextColored(ImVec4(1.0, 0.5, 0.5, 1.0), gpuerror.c_str());
-            ImGui::Text("Computing on CPU");
+            ImGui::Text("Fellback to Default computing");
 
             if (ImGui::Button("OK", buttonMedium)) gpuerrorwindow = false;
 
@@ -498,10 +498,10 @@ namespace Interface {
 
             SmallOffset("pre-computing-type");
 
-            ImGui::Text("Computing on:");
-            ImGui::RadioButton("CPU", &computingType, 0);
+            ImGui::Text("Computing type:");
+            ImGui::RadioButton("Default", &computingType, 0);
             ImGui::SameLine();
-            ImGui::RadioButton("GPU", &computingType, 1);
+            ImGui::RadioButton("OpenCL", &computingType, 1);
 
             if (computingType == 0) {
                 ImGui::SetNextItemWidth(Scale(100.0));
