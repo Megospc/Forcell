@@ -198,7 +198,114 @@ namespace Simulation {
         else self->task1table(start, end);
     }
 
-    void Simulation::task1table(uint start, uint end) {
+    // Some very complex manipulations with #define to create to create many variants of one function easier.
+
+    // Function declaration
+    #define SIMULATION_TASKFN(name, code) void Simulation::name(uint start, uint end) { \
+        code \
+    } 
+
+    // Main loops
+    #define SIMULATION_TASKFN_LOOPS(code) for (uint i = start; i < end; i++) { \
+        Particle* a = &particles[i]; \
+        \
+        for (uint j = 0; j < particlesCount; j++) { \
+            if (i == j) continue; \
+            \
+            Particle* b = &particles[j]; \
+            \
+            code \
+        } \
+    }
+
+    // Calculate distance
+    #define SIMULATION_TASKFN_DISTANCE \
+        float dx = b->x-a->x; \
+        float dy = b->y-a->y; \
+        \
+        float d2 = dx*dx+dy*dy;
+    
+    // Calculate minimal distance
+    #define SIMULATION_TASKFN_RADIUSES \
+        float rr = a->size+b->size; \
+        float rr2 = rr*rr;
+    
+    // Accept force to particle
+    #define SIMULATION_TASKFN_ACCEPTFORCE \
+        a->vx += dx*f; \
+        a->vy += dy*f;
+    
+    // Check if minimum distance has been reached
+    #define SIMULATION_TASKFN_MINDIST if (d2 < 0.0001) dx = 1.0, d2 = 1.0, dy = 0.0;
+
+    // Collision test
+    #define SIMULATION_TASKFN_COLLITEST (d2 < rr2 && rule->bounceForce > 0.0) || d2 < 0.0001
+
+    // Ca;culate collision force
+    #define SIMULATION_TASKFN_COLLIFORCE \
+        float d = SQRT(d2); \
+        \
+        float depth = rr-d; \
+        \
+        f = -depth/2.0/d*rule->bounceForce;
+    
+    #define SIMULATION_TASKFN_RULEIDX uint ruleidx = a->type*10+b->type;
+
+    #define SIMULATION_TASKFN_FORCE \
+        float maxd = rule->zones[ruleidx]; \
+        float maxd2 = maxd*maxd; \
+        \
+        if (d2 > maxd2) continue; \
+        \
+        f = rule->forces[ruleidx]/d2;
+    
+    #define SIMULATION_TASKFN_FORCEADD(zones, forces) { \
+        float maxd = rule->zones[ruleidx]; \
+        float maxd2 = maxd*maxd; \
+        \
+        if (d2 <= maxd2) f += rule->forces[ruleidx]/d2; \
+    }
+
+    SIMULATION_TASKFN(task1table, // One table, no extensions
+        SIMULATION_TASKFN_LOOPS(
+            SIMULATION_TASKFN_DISTANCE
+            SIMULATION_TASKFN_RADIUSES
+            float f;
+
+            if (SIMULATION_TASKFN_COLLITEST) {
+                SIMULATION_TASKFN_MINDIST
+                SIMULATION_TASKFN_COLLIFORCE
+            } else {
+                SIMULATION_TASKFN_RULEIDX
+
+                SIMULATION_TASKFN_FORCE
+            }
+
+            SIMULATION_TASKFN_ACCEPTFORCE
+        )
+    )
+
+    SIMULATION_TASKFN(task2table, // Two tables, no extensions
+        SIMULATION_TASKFN_LOOPS(
+            SIMULATION_TASKFN_DISTANCE
+            SIMULATION_TASKFN_RADIUSES
+            float f = 0.0;
+
+            if (SIMULATION_TASKFN_COLLITEST) {
+                SIMULATION_TASKFN_MINDIST
+                SIMULATION_TASKFN_COLLIFORCE
+            } else {
+                SIMULATION_TASKFN_RULEIDX
+
+                SIMULATION_TASKFN_FORCEADD(zones, forces)
+                SIMULATION_TASKFN_FORCEADD(zones2, forces2)
+            }
+
+            SIMULATION_TASKFN_ACCEPTFORCE
+        )
+    )
+
+    /*void Simulation::task1table(uint start, uint end) {
         for (uint i = start; i < end; i++) {
             Particle* a = &particles[i];
 
@@ -290,7 +397,7 @@ namespace Simulation {
                 a->vy += dy*f;
             }
         }
-    }
+    }*/
 
     void Simulation::step(uint threadcount, float speedup) {
         std::thread* threads[MAX_SIMULATION_THREADS];

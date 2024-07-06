@@ -9,9 +9,9 @@ set(EXECUTABLE "Forcell")
 set(CMAKE_CXX_STANDARD 17)
 
 if (${OPTIMIZATIONS})
-    add_compile_options(-Ofast)
+    add_compile_options(-Ofast -Wno-unused-result)
 else()
-    add_compile_options(-Og)
+    add_compile_options(-Og -Wall -Wextra)
 endif()
 
 set(GLFW_BUILD_DOCS OFF CACHE BOOL "GLFW lib only")
