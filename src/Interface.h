@@ -328,8 +328,6 @@ namespace Interface {
 
         if (!window->isOk()) return false;
 
-        GUI::INI("assets/imgui.ini");
-
         if (!GUI::Init(window)) return false;
 
         { // Load icon
