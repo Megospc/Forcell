@@ -1,5 +1,19 @@
 <h1 align="center">🧲 Forcell 🧬</h1>
+
+<p align="center">
+    <img src="https://img.shields.io/github/stars/Megospc/Forcell?style=for-the-badge">
+    <img src="https://img.shields.io/badge/C%2B%2B-00599C?style=for-the-badge">
+    <img src="https://img.shields.io/badge/Windows-0078D6?style=for-the-badge">
+    <img src="https://img.shields.io/badge/Ubuntu-E95420?style=for-the-badge">
+    <img src="https://img.shields.io/badge/CMake-064F8C?style=for-the-badge">
+    <a href="https://megospc.github.io/ForcellDemo">
+        <img src="https://img.shields.io/badge/GitHub%20Pages-222222?style=for-the-badge">
+    </a>
+</p>
+
 Forcell is a particle life simulation with new features and Multi-threaded computing on CPU.
+
+[Online demo on GitHub Pages](https://megospc.github.io/ForcellDemo)
 
 Version: 1.3.0 (03.07.2024)
 
@@ -35,7 +49,7 @@ For Ubuntu, these packages:
 
 ### 📄 Steps
 1. Download zip-archive with source code.\
-   <img src="images/install1.png" width="600">
+    <img src="images/install1.png" width="600">
 2. Extract the archive.
 3. (Only for windows) Open `run.bat` in Notepad and edit compiler and make paths if needed.
 4. Open folder with `CMakeLists.txt` in terminal.
@@ -44,7 +58,7 @@ For Ubuntu, these packages:
 # Ubuntu
 bash ./run.sh
 
-# Windows:
+# Windows
 ./run.bat
 ```
 6. Wait for compilation to complete.
