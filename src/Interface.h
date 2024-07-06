@@ -31,6 +31,14 @@ namespace Interface {
     bool confignoupdate = false;
     bool postproc = false;
 
+    bool windowperformance = false;
+    bool windowappearance = false;
+    bool windowcamera = false;
+    bool windowmousetool = false;
+    bool windowrule = false;
+    bool windowsettings = false;
+    bool windowbuildinfo = false;
+
     Simulation::Simulation* simulation = nullptr;
     Render::Render* render = nullptr;
 
@@ -421,7 +429,7 @@ namespace Interface {
     }
 
     void KeyHint(string key, float offset = 0.0) {
-        ImGui::SameLine(ImGui::GetWindowWidth()-Scale(30.0+offset));
+        ImGui::SameLine(ImGui::GetWindowContentRegionMax().x-Scale(15.0+offset));
         ImGui::TextColored(ImVec4(1.0, 1.0, 1.0, 0.3), key.c_str());
     }
     
@@ -490,9 +498,27 @@ namespace Interface {
 
         SmallOffset("pre-headers");
 
-        CollapsingHeader("Performance") {
+        ImGui::Checkbox("Performance", &windowperformance);
+        ImGui::Checkbox("Appearance", &windowappearance);
+        ImGui::Checkbox("Camera", &windowcamera);
+        ImGui::Checkbox("Mouse tool", &windowmousetool);
+        ImGui::Checkbox("Rule", &windowrule);
+        ImGui::Checkbox("Settings", &windowsettings);
+        ImGui::Checkbox("Build info", &windowbuildinfo);
+        
+        SmallOffset("pre-copyright");
+
+        ImGui::Text("Copyright (c) 2024 Megospc");
+        
+        ImGui::End();
+
+        if (windowperformance) {
+            ImGui::Begin("Performance", &windowperformance);
+
             ImGui::Text("Frames per second: %d", fps);
             ImGui::Text("Steps  per second: %d", sps);
+            
+            KeyHint("[D]");
 
             ImGui::SetNextItemWidth(Scale(100.0));
 
@@ -511,10 +537,12 @@ namespace Interface {
             ImGui::SameLine();
             ImGui::TextColored(ImVec4(1.0, 1.0, 0.2, 1.0), "unrecommended");
 
-            CollapsingEnd;
+            ImGui::End();
         }
 
-        CollapsingHeader("Appearence") {
+        if (windowappearance) {
+            ImGui::Begin("Appearance", &windowappearance);
+
             ImGui::Checkbox("Rendering", &rendering);
 
             if (rendering) {
@@ -543,10 +571,12 @@ namespace Interface {
             if (ImGui::Checkbox("Fullscreen mode", &fullscreen)) updateFullscreen();
             KeyHint("[F11]", 10.0);
 
-            CollapsingEnd;
+            ImGui::End();
         }
 
-        CollapsingHeader("Camera") {
+        if (windowcamera) {
+            ImGui::Begin("Camera", &windowcamera);
+
             ImGui::Text("Camera: %.0f:%.0f", -camera.x*simulation->width/2.0, -camera.y*simulation->height/2.0);
             ImGui::SameLine(ImGui::GetWindowWidth()-buttonMedium.x-GUI::style->ItemSpacing.x);
             if (ImGui::Button("Reset##resetcamera", buttonMedium)) camera = vec2(0.0, 0.0);
@@ -564,10 +594,12 @@ namespace Interface {
             if (ImGui::Button("Go to center", buttonMedium)) camera = vec2(0.0, 0.0), zoomsteps = 0.0;
             KeyHint("[O]");
 
-            CollapsingEnd;
+            ImGui::End();
         }
 
-        CollapsingHeader("Mouse tool") {
+        if (windowmousetool) {
+            ImGui::Begin("Mouse tool", &windowmousetool);
+
             ImGui::RadioButton("Move camera", &mousetool, 1);
             KeyHint("[1]");
             ImGui::RadioButton("Shove out", &mousetool, 2);
@@ -580,10 +612,12 @@ namespace Interface {
                 ImGui::DragFloat("Force", &shoveforce, 0.01, 0.0, 100.0, "%.1f");
             }
 
-            CollapsingEnd;
+            ImGui::End();
         }
 
-        CollapsingHeader("Rule") {
+        if (windowrule) {
+            ImGui::Begin("Rule", &windowrule);
+
             if (ImGui::Button("Export", buttonMedium)) Saver::Save(&rule);
             ImGui::SameLine();
             if (ImGui::Button("Import", buttonMedium)) {
@@ -661,10 +695,12 @@ namespace Interface {
                 CollapsingEnd;
             }
 
-            CollapsingEnd;
+            ImGui::End();
         }
 
-        CollapsingHeader("Settings") {
+        if (windowsettings) {
+            ImGui::Begin("Settings", &windowsettings);
+
             ImGui::SetNextItemWidth(Scale(100.0));
             ImGui::DragInt("Simulation size", &params.width, 5.0, 100, 10000);
             params.height = params.width;
@@ -674,13 +710,15 @@ namespace Interface {
             if (ImGui::Button("Restart", buttonMedium)) start();
             KeyHint("[R]");
 
-            CollapsingEnd;
+            ImGui::End();
         }
 
         rule.clamp();
         params.clamp();
-        
-        CollapsingHeader("Build info") {
+
+        if (windowbuildinfo) {
+            ImGui::Begin("Build info", &windowbuildinfo);
+
             ImGui::BulletText(VERSION);
 
             #ifdef OPTIMIZATIONS_ON
@@ -689,14 +727,8 @@ namespace Interface {
             ImGui::BulletText("Optimizations disabled (debug build)");
             #endif
 
-            CollapsingEnd;
+            ImGui::End();
         }
-        
-        SmallOffset("pre-copyright");
-
-        ImGui::Text("Copyright (c) 2024 Megospc");
-        
-        ImGui::End();
 
         ImGui::PopFont();
 
