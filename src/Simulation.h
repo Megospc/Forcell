@@ -83,7 +83,7 @@ namespace Simulation {
             for (uint i = 0; i < 10; i++) freqs[i] = Rand::Range(0.01, 1.00);
 
             for (uint i = 0; i < 100; i++) {
-                float f = Rand::Range(0.0, 3.0);
+                float f = Rand::Range(0.0, SQRT(3.0));
 
                 forces[i] = Rand::Sign()*f*f;
 
@@ -91,7 +91,7 @@ namespace Simulation {
 
                 zones[i] = r*r;
 
-                float f2 = Rand::Range(0.0, 3.0);
+                float f2 = Rand::Range(0.0, SQRT(3.0));
 
                 forces2[i] = Rand::Sign()*f2*f2-forces[i];
 
@@ -175,6 +175,26 @@ namespace Simulation {
 
             ~Simulation() {
                 free(particles);
+            }
+
+            void shove(float x, float y, float r, float force) {
+                float r2 = r*r;
+
+                for (uint i = 0; i < particlesCount; i++) {
+                    Particle* a = &particles[i];
+
+                    float dx = x-a->x;
+                    float dy = y-a->y;
+
+                    float d2 = dx*dx+dy*dy;
+
+                    if (d2 > r2) continue;
+
+                    float f = -force/d2;
+
+                    a->vx += dx*f;
+                    a->vy += dy*f;
+                }
             }
 
             void task1table(uint, uint);

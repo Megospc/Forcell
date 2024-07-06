@@ -44,6 +44,7 @@ namespace Interface {
     int threadcount = 1;
     uint windowwidth = 1600;
     uint windowheight = 900;
+    int mousetool = 1;
 
     vec2 camera;
     float zoomsteps;
@@ -86,6 +87,10 @@ namespace Interface {
         return scrpos*vec2(scrratio()/simratio(), 1.0)/zoom();
     }
 
+    vec2 mousesim() {
+        return (getsimpos(mousepos)+1.0-camera)/2.0*simsize();
+    }
+
     void updatemouse() {
         mousepos = (Input::GetMouse()/scrsize()*2.0-1.0)*vec2(1.0, -1.0);
     }
@@ -97,7 +102,7 @@ namespace Interface {
     void mousemove(float x, float y) {
         updatemouse();
 
-        if (mousedown) updatecamera();
+        if (mousedown && mousetool == 1) updatecamera();
     }
 
     void mousestart() {
@@ -111,7 +116,7 @@ namespace Interface {
     void mouseend() {
         updatemouse();
 
-        updatecamera();
+        if (mousetool == 1) updatecamera();
 
         mousedown = false;
     }
@@ -206,6 +211,9 @@ namespace Interface {
             }
 
             if (key == ImGuiKey_LeftShift) keyshift = true;
+
+            if (key == ImGuiKey_1) mousetool = 1;
+            if (key == ImGuiKey_2) mousetool = 2;
         }
 
         if (action == GLFW_RELEASE) {
@@ -414,7 +422,16 @@ namespace Interface {
         ImVec2 buttonMedium = ImVec2(Scale(80.0), Scale(18.0));
         ImVec2 buttonDouble = ImVec2(Scale(160.0)+GUI::style->ItemSpacing.x, Scale(18.0));
 
+        static float shoveforce = 10.0;
+        static float shoveradius = 100.0;
+
         if (!pause) for (uint i = 0; i < stepsperframe; i++) {
+            if (mousetool == 2 && mousedown) {
+                vec2 pos = mousesim();
+
+                simulation->shove(pos.x, pos.y, shoveradius, shoveforce);
+            }
+
             simulation->step(threadcount, speedup);
 
             stepcount++;
@@ -532,6 +549,20 @@ namespace Interface {
 
             ImGui::SetNextItemWidth(Scale(60.0));
             ImGui::DragFloat("Mouse wheel sensitivity", &wheelsensitivity, 0.05, 0.0, 1000.0, "%.1f");
+
+            CollapsingEnd;
+        }
+
+        CollapsingHeader("Mouse tool") {
+            ImGui::RadioButton("Move camera", &mousetool, 1);
+            ImGui::RadioButton("Shove out", &mousetool, 2);
+
+            if (mousetool == 2) {
+                ImGui::SetNextItemWidth(Scale(60.0));
+                ImGui::DragFloat("Radius", &shoveradius, 0.1, 0.0, 10000.0, "%.0f");
+                ImGui::SetNextItemWidth(Scale(60.0));
+                ImGui::DragFloat("Force", &shoveforce, 0.01, 0.0, 100.0, "%.1f");
+            }
 
             CollapsingEnd;
         }
