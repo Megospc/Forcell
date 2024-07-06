@@ -186,6 +186,10 @@ namespace Interface {
                 if (key == ImGuiKey_DownArrow) camera.y += step;
                 if (key == ImGuiKey_UpArrow) camera.y -= step;
             }
+            
+            if (key == ImGuiKey_S) stepsperframe--;
+            if (key == ImGuiKey_F) stepsperframe++;
+            SCLAMP(stepsperframe, 1, 5);
         }
 
         if (action == GLFW_PRESS) {
@@ -193,7 +197,7 @@ namespace Interface {
 
             if (key == ImGuiKey_Space || key == ImGuiKey_P) pause = !pause;
 
-            if (key == ImGuiKey_O || key == ImGuiKey_9) camera = vec2(0.0, 0.0);
+            if (key == ImGuiKey_O || key == ImGuiKey_I) camera = vec2(0.0, 0.0);
             if (key == ImGuiKey_O || key == ImGuiKey_0) zoomsteps = 0.0;
 
             if (key == ImGuiKey_R) start();
@@ -415,6 +419,11 @@ namespace Interface {
             ImGui::EndTable();
         }
     }
+
+    void KeyHint(string key, float offset = 0.0) {
+        ImGui::SameLine(ImGui::GetWindowWidth()-Scale(30.0+offset));
+        ImGui::TextColored(ImVec4(1.0, 1.0, 1.0, 0.3), key.c_str());
+    }
     
     void frame() {
         ImVec2 buttonTiny = ImVec2(Scale(18.0), Scale(18.0));
@@ -475,6 +484,7 @@ namespace Interface {
         if (ImGui::Button(pause ? "Continue":"Pause", buttonMedium)) pause = !pause;
         ImGui::SameLine();
         if (ImGui::Button("Quit", buttonMedium)) escaping = true;
+        KeyHint("[space]", 20.0);
 
         ImGui::Text("Time steps: %d", simulation->frame);
 
@@ -487,6 +497,7 @@ namespace Interface {
             ImGui::SetNextItemWidth(Scale(100.0));
 
             ImGui::SliderInt("##stepsperframe", &stepsperframe, 1, 5, stepsperframe == 1 ? "%d step per frame":"%d steps per frame");
+            KeyHint("[S][F]", 10.0);
             
             SmallOffset("pre-threads");
 
@@ -530,32 +541,37 @@ namespace Interface {
             if (ImGui::RadioButton("x4", &interfacescale, 2)) StyleRescale();
 
             if (ImGui::Checkbox("Fullscreen mode", &fullscreen)) updateFullscreen();
-            
+            KeyHint("[F11]", 10.0);
 
             CollapsingEnd;
         }
 
         CollapsingHeader("Camera") {
             ImGui::Text("Camera: %.0f:%.0f", -camera.x*simulation->width/2.0, -camera.y*simulation->height/2.0);
-            ImGui::SameLine();
+            ImGui::SameLine(ImGui::GetWindowWidth()-buttonMedium.x-GUI::style->ItemSpacing.x);
             if (ImGui::Button("Reset##resetcamera", buttonMedium)) camera = vec2(0.0, 0.0);
 
             ImGui::SetNextItemWidth(Scale(60.0));
             ImGui::SliderFloat("##zoom", &zoomsteps, MIN_ZOOM, MAX_ZOOM, "");
             ImGui::SameLine();
             ImGui::Text("Zoom: %.2f", zoom());
-            ImGui::SameLine();
+            ImGui::SameLine(ImGui::GetWindowWidth()-buttonMedium.x-GUI::style->ItemSpacing.x);
             if (ImGui::Button("Reset##resetzoom", buttonMedium)) zoomsteps = 0.0;
 
             ImGui::SetNextItemWidth(Scale(60.0));
             ImGui::DragFloat("Mouse wheel sensitivity", &wheelsensitivity, 0.05, 0.0, 1000.0, "%.1f");
+
+            if (ImGui::Button("Go to center", buttonMedium)) camera = vec2(0.0, 0.0), zoomsteps = 0.0;
+            KeyHint("[O]");
 
             CollapsingEnd;
         }
 
         CollapsingHeader("Mouse tool") {
             ImGui::RadioButton("Move camera", &mousetool, 1);
+            KeyHint("[1]");
             ImGui::RadioButton("Shove out", &mousetool, 2);
+            KeyHint("[2]");
 
             if (mousetool == 2) {
                 ImGui::SetNextItemWidth(Scale(60.0));
@@ -579,6 +595,7 @@ namespace Interface {
                 rule.random(seed());
                 start();
             }
+            KeyHint("[N]");
 
             SmallOffset("rule-pre-params");
 
@@ -655,6 +672,7 @@ namespace Interface {
             ImGui::DragInt("Number of particles", &params.particles, 5.0, 0, 100000);
 
             if (ImGui::Button("Restart", buttonMedium)) start();
+            KeyHint("[R]");
 
             CollapsingEnd;
         }
