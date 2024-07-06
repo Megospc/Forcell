@@ -167,7 +167,7 @@ namespace Simulation {
                     particles[i].vy = 0.0;
 
                     particles[i].size = 10.0;
-                    particles[i].type = GetParticleType(rule, Rand::Range(0.0, sumfreq));
+                    particles[i].type = GetParticleType(rule, (float)i/(particlesCount-1)*sumfreq);
                 }
 
                 frame = 0;
