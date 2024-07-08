@@ -109,6 +109,11 @@ namespace Simulation {
             attractor = 0.0;
             bounceForce = Rand::Range(0.1, 0.4);
         }
+
+        // Metadata
+        char name[256] = { 'U', 'n', 'n', 'a', 'm', 'e', 'd', '\0' };
+        char creator[256] = { '\0' };
+        char lastupdate[256] = { '[', 'n', 'o', 't', ' ', 'p', 'r', 'o', 'v', 'i', 'd', 'e', 'd', ']', '\0' };
     };
 
     struct Params {

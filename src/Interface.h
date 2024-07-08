@@ -30,6 +30,8 @@ namespace Interface {
     bool fullscreen = false;
     bool confignoupdate = false;
     bool postproc = false;
+    bool rulemetawindow = false;
+    bool rulesavewindow = false;
 
     bool windowperformance = false;
     bool windowappearance = false;
@@ -44,6 +46,8 @@ namespace Interface {
 
     Simulation::Params params;
     Simulation::Rule rule;
+
+    string creatorname = "";
 
     uint fps = 60, sps = 60;
     uint lastsecond;
@@ -269,6 +273,8 @@ namespace Interface {
         if (windowsettings) str += KeyVal("window-settings", "");
         if (windowbuildinfo) str += KeyVal("window-buildinfo", "");
 
+        if (creatorname.length() > 0) str += KeyVal("creator", creatorname);
+
         str += KeyVal("threads", threadcount);
         str += KeyVal("wheel", wheelsensitivity);
         str += KeyVal("width", windowwidth);
@@ -302,6 +308,8 @@ namespace Interface {
         windowsettings = false;
         windowbuildinfo = false;
 
+        creatorname = "";
+
         string str = data.data;
 
         string line = "";
@@ -332,6 +340,8 @@ namespace Interface {
                 if (data.key == "width") windowwidth = stoi(data.val);
                 if (data.key == "height") windowheight = stoi(data.val);
                 if (data.key == "interface") interfacescale = strscale(data.val);
+
+                if (data.key == "creator") creatorname = data.val;
 
                 line = "";
             } else {
@@ -527,6 +537,45 @@ namespace Interface {
 
         ImGui::PushFont(fontMedium[interfacescale]);
 
+        if (rulemetawindow) {
+            ImGui::Begin("Rule metadata", &rulemetawindow);
+
+            ImGui::Text("Name: %s", rule.name);
+            ImGui::Text("Creator: %s", rule.creator);
+            ImGui::Text("Last update: %s", rule.lastupdate);
+
+            SmallOffset("rule-metadata-preok");
+
+            if (ImGui::Button("OK", buttonMedium)) rulemetawindow = false;
+
+            ImGui::End();
+        }
+
+        if (rulesavewindow) {
+            ImGui::Begin("Saving rule", &rulemetawindow);
+
+            ImGui::Text("Name: ");
+            ImGui::SetNextItemWidth(Scale(120.0));
+            ImGui::InputText("##rulename", rule.name, 256);
+            ImGui::Text("Creator: ");
+            ImGui::SetNextItemWidth(Scale(120.0));
+            ImGui::InputText("##rulecreator", rule.creator, 256);
+
+            SmallOffset("rule-save-prebtn");
+
+            if (ImGui::Button("Save", buttonMedium)) {
+                creatorname = string(rule.creator);
+
+                Saver::Save(&rule);
+
+                rulesavewindow = false;
+            }
+            ImGui::SameLine();
+            if (ImGui::Button("Cancel", buttonMedium)) rulesavewindow = false;
+
+            ImGui::End();
+        }
+
         ImGui::Begin("Forcell");
 
         if (ImGui::Button(pause ? "Continue":"Pause", buttonMedium)) pause = !pause;
@@ -664,10 +713,16 @@ namespace Interface {
         if (windowrule) {
             ImGui::Begin("Rule", &windowrule);
 
-            if (ImGui::Button("Export", buttonMedium)) Saver::Save(&rule);
+            if (ImGui::Button("Export", buttonMedium)) {
+                writeStringToChar(rule.creator, creatorname);
+                rulesavewindow = true;
+            }
+
             ImGui::SameLine();
+
             if (ImGui::Button("Import", buttonMedium)) {
                 Saver::Open(&rule);
+                rulemetawindow = true;
                 start();
             }
 

@@ -32,6 +32,10 @@ namespace Saver {
     void Save(Simulation::Rule* rule) {
         string str = "";
 
+        str += KeyVal("name", string(rule->name));
+        str += KeyVal("creator", string(rule->creator));
+        str += KeyVal("lastupdate", std::to_string(time(NULL)));
+
         str += KeyVal("types", rule->types);
         str += KeyVal("friction", rule->friction, "%.3f");
         str += KeyVal("attractor", rule->attractor, "%.5f");
@@ -71,7 +75,7 @@ namespace Saver {
 
         nfdu8char_t* path;
 
-        if (NFD_SaveDialog(&path, NULL, 0, ".", "myrule.txt") != NFD_OKAY) return;
+        if (NFD_SaveDialog(&path, NULL, 0, ".", (string(rule->name)+".txt").c_str()) != NFD_OKAY) return;
 
         File::Write(path, data);
 
@@ -114,6 +118,10 @@ namespace Saver {
 
         rule->forcetype = 0;
 
+        writeStringToChar(rule->name, "Unnamed");
+        writeStringToChar(rule->creator, "[not provided]");
+        writeStringToChar(rule->lastupdate, "[not provided]");
+
         string line = "";
 
         for (uint i = 0; i < data.length; i++) {
@@ -137,6 +145,15 @@ namespace Saver {
                     if (keyval.val == "forcell") rule->forcetype = 0;
                     if (keyval.val == "classic") rule->forcetype = 2;
                     if (keyval.val == "constant") rule->forcetype = 1;
+                }
+
+                if (keyval.key == "name") writeStringToChar(rule->name, keyval.val);
+                if (keyval.key == "creator") writeStringToChar(rule->creator, keyval.val);
+                if (keyval.key == "lastupdate") {
+                    const time_t time = stol(keyval.val);
+                    const tm* tm = std::localtime(&time);
+
+                    std::strftime(rule->lastupdate, 256, "%d %b %Y %H:%M:%S", tm);
                 }
 
                 line = "";

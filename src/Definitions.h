@@ -82,6 +82,14 @@ float angleOfVector(float x, float y, float d = -1.0) {
     return y < 0.0 ? MAX_ANGLE-a:a;
 }
 
+void writeStringToChar(char* target, string str) {
+    const char* data = str.c_str();
+
+    for (uint i = 0; i < str.length(); i++) target[i] = data[i];
+
+    target[str.length()] = '\0';
+}
+
 struct KeyVal {
     string key;
     string val;
