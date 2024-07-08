@@ -66,7 +66,10 @@ namespace Interface {
         return size*POW(2.0, scale);
     }
 
-    float particlebright = 1.0;
+    float particleopacity = 1.0;
+    float particlesize = 1.0;
+    float particleglow = 1.0;
+    float particlehole = 1.0;
 
     float zoom() {
         return POW(ZOOM_STEP, zoomsteps);
@@ -483,7 +486,10 @@ namespace Interface {
 
             render->render(
                 camera, zoom(),
-                particlebright,
+                particleopacity,
+                particlesize,
+                particleglow,
+                particlehole,
                 (escaping ? vec3(0.5):vec3(1.0))*vec3(colorTone[0], colorTone[1], colorTone[2]),
                 glowing,
                 escaping
@@ -569,9 +575,15 @@ namespace Interface {
 
             if (rendering) {
                 ImGui::SetNextItemWidth(Scale(100.0));
-                ImGui::SliderFloat("Particles opacity", &particlebright, 0.0, 1.0, "%.2f");
+                ImGui::SliderFloat("Particle opacity", &particleopacity, 0.0, 1.0, "%.2f");
+                ImGui::SetNextItemWidth(Scale(100.0));
+                ImGui::SliderFloat("Particle glowing", &particleglow, 0.0, 1.0, "%.2f");
+                ImGui::SetNextItemWidth(Scale(100.0));
+                ImGui::SliderFloat("Particle size", &particlesize, 0.2, 1.0, "%.2f");
+                ImGui::SetNextItemWidth(Scale(100.0));
+                ImGui::SliderFloat("Particle hole", &particlehole, 0.0, 1.0, "%.2f");
 
-                ImGui::Checkbox("Glow effect", &glowing);
+                ImGui::Checkbox("Addition effect", &glowing);
                 if (ImGui::Checkbox("Post-processing", &postproc)) recreateRender();
 
                 if (postproc) {
@@ -631,7 +643,7 @@ namespace Interface {
                 ImGui::SetNextItemWidth(Scale(60.0));
                 ImGui::DragFloat("Radius", &shoveradius, 0.1, 0.0, 10000.0, "%.0f");
                 ImGui::SetNextItemWidth(Scale(60.0));
-                ImGui::DragFloat("Force", &shoveforce, 0.01, 0.0, 100.0, "%.1f");
+                ImGui::DragFloat("Force", &shoveforce, 0.01, 0.0, 1000.0, "%.1f");
             }
 
             ImGui::End();

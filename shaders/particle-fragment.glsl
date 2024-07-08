@@ -9,17 +9,23 @@ in vec2 fTexPos;
 
 out vec4 fColor;
 
-uniform float uBright;
+uniform float uOpacity;
+uniform float uHole;
+uniform float uSizing;
+uniform float uGlowing;
 
 void main() {
     float d = length(fPos);
 
-    if (d < INNER_SIZE) {
-        if (d < HOLE_SIZE*INNER_SIZE) fColor = vec4(fBaseColor, d/(HOLE_SIZE*INNER_SIZE)*0.6+0.4);
-        else fColor = vec4(fBaseColor, 1.0);
+    if (d < INNER_SIZE*uSizing) {
+        if (d < HOLE_SIZE*INNER_SIZE*uSizing*uHole) {
+            fColor = vec4(fBaseColor, (d/(HOLE_SIZE*INNER_SIZE*uSizing*uHole)*0.6+0.4));
+        } else {
+            fColor = vec4(fBaseColor, 1.0);
+        }
     } else {
-        fColor = vec4(fBaseColor, (1.0-(d-INNER_SIZE)/(1.0-INNER_SIZE))*0.6);
+        fColor = vec4(fBaseColor, (1.0-(d-INNER_SIZE*uSizing)/(1.0-INNER_SIZE*uSizing))*0.6*uGlowing);
     }
 
-    fColor.a *= uBright;
+    fColor.a *= uOpacity;
 }

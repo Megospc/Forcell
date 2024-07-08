@@ -191,7 +191,7 @@ namespace Render {
                 }
             }
 
-            void render(vec2 camera, float zoom, float particlebright, vec3 clrmul, bool glowing, bool strongblur) {
+            void render(vec2 camera, float zoom, float particleopacity, float particlesize, float particleglow, float particlehole, vec3 clrmul, bool glowing, bool strongblur) {
                 if (!ok) return;
 
                 uint ww = window->getWidth();
@@ -238,7 +238,10 @@ namespace Render {
                 particleVAO->bind();
 
                 programParticle->use();
-                glUniform1f(programParticle->uniform("uBright"), particlebright);
+                glUniform1f(programParticle->uniform("uOpacity"), particleopacity);
+                glUniform1f(programParticle->uniform("uSizing"), particlesize);
+                glUniform1f(programParticle->uniform("uGlowing"), particleglow);
+                glUniform1f(programParticle->uniform("uHole"), particlehole);
 
                 positionBuffer->bind();
                 positionBuffer->data(simulation->particles, sizeof(Simulation::Particle)*simulation->particlesCount, GL_DYNAMIC_DRAW);
