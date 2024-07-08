@@ -321,8 +321,22 @@ namespace Simulation {
         float d = SQRT(d2); \
         float dz = (d-rr)/zd; \
         \
-        if (d < 1.0) f = rule->forces[ruleidx]*dz/d*0.01; \
-        else f = rule->forces[ruleidx]*(2.0-dz)/d*0.01;
+        if (d < 1.0) f = rule->forces[ruleidx]*dz/d*0.003; \
+        else f = rule->forces[ruleidx]*(2.0-dz)/d*0.003;
+    
+    #define TASKFN_CLASSIC_FORCEADD(zones, forces) { \
+        float zd = rule->zones[ruleidx]; \
+        float maxd = zd*2+rr; \
+        float maxd2 = maxd*maxd; \
+        \
+        if (d2 <= maxd2) { \
+            float d = SQRT(d2); \
+            float dz = (d-rr)/zd; \
+            \
+            if (d < 1.0) f = rule->forces[ruleidx]*dz/d*0.003; \
+            else f = rule->forces[ruleidx]*(2.0-dz)/d*0.003; \
+        } \
+    }
 
     #define TASKFN_FORCELL(name, code) SIMULATION_TASKFN(name, \
         TASKFN_LOOPS( \
@@ -403,9 +417,9 @@ namespace Simulation {
     TASKFN_CLASSIC(task1classic, // One table, classic force type
         TASKFN_CLASSIC_FORCE
     )
-    TASKFN_CONSTANT(task2classic, // Two tables, classic force type
-        TASKFN_CONST_FORCEADD(zones, forces)
-        TASKFN_CONST_FORCEADD(zones2, forces2)
+    TASKFN_CLASSIC(task2classic, // Two tables, classic force type
+        TASKFN_CLASSIC_FORCEADD(zones, forces)
+        TASKFN_CLASSIC_FORCEADD(zones2, forces2)
     )
 
     void task(Simulation* self, uint start, uint end) {
