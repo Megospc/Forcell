@@ -382,6 +382,9 @@ namespace Interface {
 
         StyleRescale();
 
+        rule.types = 6;
+        rule.random(seed());
+
         start();
 
         zoomsteps = 0.0;
