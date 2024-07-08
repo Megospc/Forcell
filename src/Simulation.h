@@ -14,6 +14,7 @@ namespace Simulation {
         float friction = 0.01;
         float attractor = 0.00025;
         float bounceForce = 0.5;
+        float massSpread = 0.0;
 
         int types = 2;
 
@@ -135,6 +136,7 @@ namespace Simulation {
         float x, y;
         float vx, vy;
         float size;
+        float mass;
         int type;
     };
 
@@ -169,6 +171,8 @@ namespace Simulation {
 
                 Rand::Seed(params.seed);
 
+                float mspread = rule->massSpread+1.0;
+
                 for (uint i = 0; i < particlesCount; i++) {
                     particles[i].x = Rand::Range(0.0, width);
                     particles[i].y = Rand::Range(0.0, height);
@@ -176,8 +180,10 @@ namespace Simulation {
                     particles[i].vx = 0.0;
                     particles[i].vy = 0.0;
 
-                    particles[i].size = 10.0;
+                    particles[i].size = Rand::Range(10.0/mspread, 10.0*mspread);
                     particles[i].type = GetParticleType(rule, (float)i/(particlesCount-1)*sumfreq);
+
+                    particles[i].mass = particles[i].size*particles[i].size/100.0;
                 }
 
                 frame = 0;
@@ -276,7 +282,7 @@ namespace Simulation {
         \
         float depth = rr-d; \
         \
-        f = -depth/2.0/d*rule->bounceForce;
+        f = -depth/d*rule->bounceForce*a->mass*b->mass/(a->mass+b->mass);
     
     #define TASKFN_RULEIDX uint ruleidx = a->type*10+b->type;
 
@@ -464,8 +470,8 @@ namespace Simulation {
         for (uint i = 0; i < particlesCount; i++) {
             Particle* a = &particles[i];
 
-            a->x += a->vx*speedup;
-            a->y += a->vy*speedup;
+            a->x += a->vx*speedup/a->mass;
+            a->y += a->vy*speedup/a->mass;
 
             a->vx -= (a->x-width/2.0)*rule->attractor*speedup;
             a->vy -= (a->y-height/2.0)*rule->attractor*speedup;

@@ -133,7 +133,7 @@ namespace Render {
 
                 typeBuffer->bind();
                 typeBuffer->setLocation(3);
-                typeBuffer->enable(1, GL_INT, sizeof(int), sizeof(vec2)*2+sizeof(float), sizeof(Simulation::Particle), 1);
+                typeBuffer->enable(1, GL_INT, sizeof(int), sizeof(vec2)*2+sizeof(float)*2, sizeof(Simulation::Particle), 1);
                 typeBuffer->unbind();
 
                 particleVAO->unbind();
