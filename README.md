@@ -22,6 +22,7 @@ Version: 1.5.0 (06.07.2024)
 + Supporting Ubuntu and Windows
 + Fullscreen mode
 + Create random rules with one click
++ Export/Import rules as files
 + Style customizing
 
 ## 📸 Screenshots

@@ -37,6 +37,22 @@ namespace Saver {
         str += KeyVal("attractor", rule->attractor, "%.5f");
         str += KeyVal("bounce-force", rule->bounceForce, "%.2f");
 
+        string forcetype;
+
+        switch (rule->forcetype) {
+            case 0:
+                forcetype = "forcell";
+                break;
+            case 2:
+                forcetype = "classic";
+                break;
+            case 1:
+                forcetype = "constant";
+                break;
+        }
+
+        str += KeyVal("type-force", forcetype);
+
         str += EncodeTable(rule->types, rule->forces, "force", "%.2f");
         str += EncodeTable(rule->types, rule->zones, "zone", "%.0f");
 
@@ -96,6 +112,8 @@ namespace Saver {
 
         NFD_FreePath(path);
 
+        rule->forcetype = 0;
+
         string line = "";
 
         for (uint i = 0; i < data.length; i++) {
@@ -114,6 +132,12 @@ namespace Saver {
                 DecodeTable(&keyval, rule->zones, "zone");
                 DecodeTable(&keyval, rule->forces2, "2force");
                 DecodeTable(&keyval, rule->zones2, "2zone");
+
+                if (keyval.key == "type-force") {
+                    if (keyval.val == "forcell") rule->forcetype = 0;
+                    if (keyval.val == "classic") rule->forcetype = 2;
+                    if (keyval.val == "constant") rule->forcetype = 1;
+                }
 
                 line = "";
             } else if (c != '\r') line += c;
