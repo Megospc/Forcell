@@ -257,6 +257,14 @@ namespace Interface {
         if (fullscreen) str += KeyVal("fullscreen", "");
         if (glowing) str += KeyVal("glowing", "");
         if (postproc) str += KeyVal("postprocessing", "");
+        
+        if (windowperformance) str += KeyVal("window-performance", "");
+        if (windowappearance) str += KeyVal("window-appearance", "");
+        if (windowcamera) str += KeyVal("window-camera", "");
+        if (windowmousetool) str += KeyVal("window-mousetool", "");
+        if (windowrule) str += KeyVal("window-rule", "");
+        if (windowsettings) str += KeyVal("window-settings", "");
+        if (windowbuildinfo) str += KeyVal("window-buildinfo", "");
 
         str += KeyVal("threads", threadcount);
         str += KeyVal("wheel", wheelsensitivity);
@@ -283,6 +291,14 @@ namespace Interface {
         confignoupdate = false;
         postproc = false;
 
+        windowperformance = false;
+        windowappearance = false;
+        windowcamera = false;
+        windowmousetool = false;
+        windowrule = false;
+        windowsettings = false;
+        windowbuildinfo = false;
+
         string str = data.data;
 
         string line = "";
@@ -296,6 +312,14 @@ namespace Interface {
                 if (data.key == "fullscreen") fullscreen = true;
                 if (data.key == "glowing") {glowing = true;Log(8888);}
                 if (data.key == "postprocessing") postproc = true;
+
+                if (data.key == "window-performance") windowperformance = true;
+                if (data.key == "window-appearance") windowappearance = true;
+                if (data.key == "window-camera") windowcamera = true;
+                if (data.key == "window-mousetool") windowmousetool = true;
+                if (data.key == "window-rule") windowrule = true;
+                if (data.key == "window-settings") windowsettings = true;
+                if (data.key == "window-buildinfo") windowbuildinfo = true;
 
                 if (data.key == "noupdate") confignoupdate = true;
 
