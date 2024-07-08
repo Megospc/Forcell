@@ -642,6 +642,14 @@ namespace Interface {
 
             SmallOffset("rule-pre-forces");
 
+            CollapsingHeader("Force type") {
+                ImGui::RadioButton("Forcell (exclusive)", &rule.forcetype, 0);
+                ImGui::RadioButton("Particle life (classic)", &rule.forcetype, 2);
+                ImGui::RadioButton("Constant (unstandard)", &rule.forcetype, 1);
+
+                CollapsingEnd;
+            }
+
             CollapsingHeader("Forces") {
                 RuleTable("forcetable", rule.forces, -2.0, 2.0, 0.001, "%.2f");
 

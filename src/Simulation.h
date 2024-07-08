@@ -17,6 +17,11 @@ namespace Simulation {
 
         int types = 2;
 
+        int forcetype = 0;
+        // 0 = Forcell
+        // 1 = Constant
+        // 2 = Classic
+
         float forces[100] = {
             0.1 , 0.25, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
             -0.1, 0.08, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
@@ -197,8 +202,12 @@ namespace Simulation {
                 }
             }
 
-            void task1table(uint, uint);
-            void task2table(uint, uint);
+            void task1forcell(uint, uint);
+            void task2forcell(uint, uint);
+            void task1const(uint, uint);
+            void task2const(uint, uint);
+            void task1classic(uint, uint);
+            void task2classic(uint, uint);
             void step(uint, float);
 
             float width, height;
@@ -213,11 +222,6 @@ namespace Simulation {
             
     };
 
-    void task(Simulation* self, uint start, uint end) {
-        if (self->rule->secondtable) self->task2table(start, end);
-        else self->task1table(start, end);
-    }
-
     // Some very complex manipulations with #define to create to create many variants of one function easier.
 
     // Function declaration
@@ -226,7 +230,7 @@ namespace Simulation {
     } 
 
     // Main loops
-    #define SIMULATION_TASKFN_LOOPS(code) for (uint i = start; i < end; i++) { \
+    #define TASKFN_LOOPS(code) for (uint i = start; i < end; i++) { \
         Particle* a = &particles[i]; \
         \
         for (uint j = 0; j < particlesCount; j++) { \
@@ -239,39 +243,39 @@ namespace Simulation {
     }
 
     // Calculate distance
-    #define SIMULATION_TASKFN_DISTANCE \
+    #define TASKFN_DISTANCE \
         float dx = b->x-a->x; \
         float dy = b->y-a->y; \
         \
         float d2 = dx*dx+dy*dy;
     
     // Calculate minimal distance
-    #define SIMULATION_TASKFN_RADIUSES \
+    #define TASKFN_RADIUSES \
         float rr = a->size+b->size; \
         float rr2 = rr*rr;
     
     // Accept force to particle
-    #define SIMULATION_TASKFN_ACCEPTFORCE \
+    #define TASKFN_ACCEPTFORCE \
         a->vx += dx*f; \
         a->vy += dy*f;
     
     // Check if minimum distance has been reached
-    #define SIMULATION_TASKFN_MINDIST if (d2 < 0.0001) dx = 1.0, d2 = 1.0, dy = 0.0;
+    #define TASKFN_MINDIST if (d2 < 0.0001) dx = 1.0, d2 = 1.0, dy = 0.0;
 
     // Collision test
-    #define SIMULATION_TASKFN_COLLITEST (d2 < rr2 && rule->bounceForce > 0.0) || d2 < 0.0001
+    #define TASKFN_COLLITEST (d2 < rr2 && rule->bounceForce > 0.0) || d2 < 0.0001
 
     // Ca;culate collision force
-    #define SIMULATION_TASKFN_COLLIFORCE \
+    #define TASKFN_COLLIFORCE \
         float d = SQRT(d2); \
         \
         float depth = rr-d; \
         \
         f = -depth/2.0/d*rule->bounceForce;
     
-    #define SIMULATION_TASKFN_RULEIDX uint ruleidx = a->type*10+b->type;
+    #define TASKFN_RULEIDX uint ruleidx = a->type*10+b->type;
 
-    #define SIMULATION_TASKFN_FORCE \
+    #define TASKFN_FORCE \
         float maxd = rule->zones[ruleidx]; \
         float maxd2 = maxd*maxd; \
         \
@@ -279,51 +283,142 @@ namespace Simulation {
         \
         f = rule->forces[ruleidx]/d2;
     
-    #define SIMULATION_TASKFN_FORCEADD(zones, forces) { \
+    #define TASKFN_FORCEADD(zones, forces) { \
         float maxd = rule->zones[ruleidx]; \
         float maxd2 = maxd*maxd; \
         \
         if (d2 <= maxd2) f += rule->forces[ruleidx]/d2; \
     }
 
-    SIMULATION_TASKFN(task1table, // One table, no extensions
-        SIMULATION_TASKFN_LOOPS(
-            SIMULATION_TASKFN_DISTANCE
-            SIMULATION_TASKFN_RADIUSES
-            float f;
+    #define TASKFN_CONST_FORCE \
+        float maxd = rule->zones[ruleidx]; \
+        float maxd2 = maxd*maxd; \
+        \
+        if (d2 > maxd2) continue; \
+        \
+        float d = SQRT(d2); \
+        \
+        f = rule->forces[ruleidx]/d*0.1;
+    
+    #define TASKFN_CONST_FORCEADD(zones, forces) { \
+        float maxd = rule->zones[ruleidx]; \
+        float maxd2 = maxd*maxd; \
+        \
+        if (d2 <= maxd2) { \
+            float d = SQRT(d2); \
+            \
+            f += rule->forces[ruleidx]/d*0.1; \
+        } \
+    }
 
-            if (SIMULATION_TASKFN_COLLITEST) {
-                SIMULATION_TASKFN_MINDIST
-                SIMULATION_TASKFN_COLLIFORCE
-            } else {
-                SIMULATION_TASKFN_RULEIDX
+    #define TASKFN_CLASSIC_FORCE \
+        float zd = rule->zones[ruleidx]; \
+        float maxd = zd*2+rr; \
+        float maxd2 = maxd*maxd; \
+        \
+        if (d2 > maxd2) continue; \
+        \
+        float d = SQRT(d2); \
+        float dz = (d-rr)/zd; \
+        \
+        if (d < 1.0) f = rule->forces[ruleidx]*dz/d*0.01; \
+        else f = rule->forces[ruleidx]*(2.0-dz)/d*0.01;
 
-                SIMULATION_TASKFN_FORCE
-            }
-
-            SIMULATION_TASKFN_ACCEPTFORCE
-        )
+    #define TASKFN_FORCELL(name, code) SIMULATION_TASKFN(name, \
+        TASKFN_LOOPS( \
+            TASKFN_DISTANCE \
+            TASKFN_RADIUSES \
+            \
+            float f = 0.0; \
+            \
+            if (TASKFN_COLLITEST) { \
+                TASKFN_MINDIST \
+                TASKFN_COLLIFORCE \
+            } else { \
+                TASKFN_RULEIDX \
+                \
+                code \
+            } \
+            \
+            TASKFN_ACCEPTFORCE \
+        ) \
     )
 
-    SIMULATION_TASKFN(task2table, // Two tables, no extensions
-        SIMULATION_TASKFN_LOOPS(
-            SIMULATION_TASKFN_DISTANCE
-            SIMULATION_TASKFN_RADIUSES
-            float f = 0.0;
-
-            if (SIMULATION_TASKFN_COLLITEST) {
-                SIMULATION_TASKFN_MINDIST
-                SIMULATION_TASKFN_COLLIFORCE
-            } else {
-                SIMULATION_TASKFN_RULEIDX
-
-                SIMULATION_TASKFN_FORCEADD(zones, forces)
-                SIMULATION_TASKFN_FORCEADD(zones2, forces2)
-            }
-
-            SIMULATION_TASKFN_ACCEPTFORCE
-        )
+    #define TASKFN_CONSTANT(name, code) SIMULATION_TASKFN(name, \
+        TASKFN_LOOPS( \
+            TASKFN_DISTANCE \
+            \
+            float f = 0.0; \
+            \
+            TASKFN_RULEIDX \
+            \
+            TASKFN_MINDIST \
+            \
+            code \
+            \
+            TASKFN_ACCEPTFORCE \
+        ) \
     )
+
+    #define TASKFN_CLASSIC(name, code) SIMULATION_TASKFN(name, \
+        TASKFN_LOOPS( \
+            TASKFN_DISTANCE \
+            TASKFN_RADIUSES \
+            \
+            float f = 0.0; \
+            \
+            if ((d2 < rr2) || d2 < 0.0001) { \
+                TASKFN_MINDIST \
+                \
+                float d = SQRT(d2); \
+                \
+                float depth = (rr-d)/rr; \
+                \
+                f = -depth*rule->bounceForce/d; \
+            } else { \
+                TASKFN_RULEIDX \
+                \
+                code \
+            } \
+            TASKFN_ACCEPTFORCE \
+        ) \
+    )
+
+    TASKFN_FORCELL(task1forcell, // One table, forcell force type
+        TASKFN_FORCE
+    )
+    TASKFN_FORCELL(task2forcell, // Two tables, forcell force type
+        TASKFN_FORCEADD(zones, forces)
+        TASKFN_FORCEADD(zones2, forces2)
+    )
+
+    TASKFN_CONSTANT(task1const, // One table, constant force type
+        TASKFN_CONST_FORCE
+    )
+    TASKFN_CONSTANT(task2const, // Two tables, constant force type
+        TASKFN_CONST_FORCEADD(zones, forces)
+        TASKFN_CONST_FORCEADD(zones2, forces2)
+    )
+
+    TASKFN_CLASSIC(task1classic, // One table, classic force type
+        TASKFN_CLASSIC_FORCE
+    )
+    TASKFN_CONSTANT(task2classic, // Two tables, classic force type
+        TASKFN_CONST_FORCEADD(zones, forces)
+        TASKFN_CONST_FORCEADD(zones2, forces2)
+    )
+
+    void task(Simulation* self, uint start, uint end) {
+        if (self->rule->secondtable) {
+            if (self->rule->forcetype == 0) self->task2forcell(start, end);
+            if (self->rule->forcetype == 1) self->task2const(start, end);
+            if (self->rule->forcetype == 2) self->task2classic(start, end);
+        } else {
+            if (self->rule->forcetype == 0) self->task1forcell(start, end);
+            if (self->rule->forcetype == 1) self->task1const(start, end);
+            if (self->rule->forcetype == 2) self->task1classic(start, end);
+        }
+    }
 
     void Simulation::step(uint threadcount, float speedup) {
         std::thread* threads[MAX_SIMULATION_THREADS];
