@@ -420,6 +420,15 @@ namespace Interface {
         ImGui::InvisibleButton(("smalloffset"+id).c_str(), ImVec2(10.0, Scale(8.0)));
     }
 
+    void DragFloat(cstr label, float* v, float speed, float min, float max, cstr fmt = "%.2f") {
+        ImGui::DragFloat(label, v, speed, min, max, fmt);
+        SCLAMP(*v, min, max);
+    }
+    void DragInt(cstr label, int* v, float speed, int min, int max, cstr fmt = "%d") {
+        ImGui::DragInt(label, v, speed, min, max, fmt);
+        SCLAMP(*v, min, max);
+    }
+
     void RuleTable(cstr id, float* ptr, float min, float max, float speed, cstr fmt) {
         if (ImGui::BeginTable(
             id,
@@ -441,7 +450,7 @@ namespace Interface {
                         ImGui::TableSetColumnIndex(i+1);
 
                         ImGui::SetNextItemWidth(Scale(30.0));
-                        ImGui::DragFloat((string("##")+id+std::to_string(i)+"-"+std::to_string(j)).c_str(), &ptr[i+j*10], speed, min, max, fmt);
+                        DragFloat((string("##")+id+std::to_string(i)+"-"+std::to_string(j)).c_str(), &ptr[i+j*10], speed, min, max, fmt);
                     }
                 } else {
                     for (uint i = 0; i < rule.types; i++) {
@@ -564,7 +573,7 @@ namespace Interface {
             SmallOffset("pre-speedup");
 
             ImGui::SetNextItemWidth(Scale(50.0));
-            ImGui::DragFloat("Speed-up", &speedup, 0.0005, 1.0, 2.0, "x%.1f");
+            DragFloat("Speed-up", &speedup, 0.0005, 1.0, 2.0, "x%.1f");
             ImGui::SameLine();
             ImGui::TextColored(ImVec4(1.0, 1.0, 0.2, 1.0), "unrecommended");
 
@@ -626,7 +635,7 @@ namespace Interface {
             if (ImGui::Button("Reset##resetzoom", buttonMedium)) zoomsteps = 0.0;
 
             ImGui::SetNextItemWidth(Scale(60.0));
-            ImGui::DragFloat("Mouse wheel sensitivity", &wheelsensitivity, 0.05, 0.0, 1000.0, "%.1f");
+            DragFloat("Mouse wheel sensitivity", &wheelsensitivity, 0.05, 0.0, 1000.0, "%.1f");
 
             if (ImGui::Button("Go to center", buttonMedium)) camera = vec2(0.0, 0.0), zoomsteps = 0.0;
             KeyHint("[O]");
@@ -644,9 +653,9 @@ namespace Interface {
 
             if (mousetool == 2) {
                 ImGui::SetNextItemWidth(Scale(60.0));
-                ImGui::DragFloat("Radius", &shoveradius, 0.1, 0.0, 10000.0, "%.0f");
+                DragFloat("Radius", &shoveradius, 0.1, 0.0, 10000.0, "%.0f");
                 ImGui::SetNextItemWidth(Scale(60.0));
-                ImGui::DragFloat("Force", &shoveforce, 0.01, 0.0, 1000.0, "%.1f");
+                DragFloat("Force", &shoveforce, 0.01, 0.0, 1000.0, "%.1f");
             }
 
             ImGui::End();
@@ -673,11 +682,11 @@ namespace Interface {
             ImGui::SetNextItemWidth(Scale(100.0));
             ImGui::InputInt("Number of types", &rule.types, 1, 1);
             ImGui::SetNextItemWidth(Scale(100.0));
-            ImGui::DragFloat("Friction", &rule.friction, 0.0002, 0.0, 1.0, "%.3f");
+            DragFloat("Friction", &rule.friction, 0.0002, 0.0, 1.0, "%.3f");
             ImGui::SetNextItemWidth(Scale(100.0));
-            ImGui::DragFloat("Attractor", &rule.attractor, 0.000001, 0.0, 1.0, "%.5f");
+            DragFloat("Attractor", &rule.attractor, 0.000001, 0.0, 1.0, "%.5f");
             ImGui::SetNextItemWidth(Scale(100.0));
-            ImGui::DragFloat("Bounce force", &rule.bounceForce, 0.001, 0.0, 1.0, "%.2f");
+            DragFloat("Bounce force", &rule.bounceForce, 0.001, 0.0, 1.0, "%.2f");
 
             SmallOffset("rule-pre-forces");
 
@@ -728,7 +737,7 @@ namespace Interface {
             CollapsingHeader("Frequencies") {
                 for (uint i = 0; i < rule.types; i++) {
                     ImGui::SetNextItemWidth(Scale(100.0));
-                    ImGui::DragFloat(("##freqs"+std::to_string(i)).c_str(), &rule.freqs[i], 0.002, 0.0, 10.0, "%.2f");
+                    DragFloat(("##freqs"+std::to_string(i)).c_str(), &rule.freqs[i], 0.002, 0.0, 10.0, "%.2f");
                     ImGui::SameLine();
                     ColorLabel("##freqsclr"+std::to_string(i), GetTypeColor(i), ImVec2(Scale(60.0), Scale(18.0)));
                 }
@@ -747,10 +756,10 @@ namespace Interface {
             ImGui::Begin("Settings", &windowsettings);
 
             ImGui::SetNextItemWidth(Scale(100.0));
-            ImGui::DragInt("Simulation size", &params.width, 5.0, 100, 10000);
+            DragInt("Simulation size", &params.width, 5.0, 100, 10000);
             params.height = params.width;
             ImGui::SetNextItemWidth(Scale(100.0));
-            ImGui::DragInt("Number of particles", &params.particles, 5.0, 0, 100000);
+            DragInt("Number of particles", &params.particles, 5.0, 0, 100000);
 
             if (ImGui::Button("Restart", buttonMedium)) start();
             KeyHint("[R]");
