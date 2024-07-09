@@ -618,6 +618,7 @@ namespace Interface {
 
             ImGui::SetNextItemWidth(Scale(100.0));
             ImGui::InputInt("CPU threads", &threadcount, 1, 8);
+            SCLAMP(threadcount, 1, 1024);
 
             SmallOffset("pre-speedup");
 
