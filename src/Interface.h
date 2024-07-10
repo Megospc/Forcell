@@ -21,7 +21,7 @@
 namespace Interface {
     GL::Window* window = nullptr;
 
-    ImFont* fontMedium[3];
+    ImFont* fontMedium[4];
 
     bool escaping = false;
     bool pause = false;
@@ -67,7 +67,12 @@ namespace Interface {
     float speedup = 1.0;
 
     float Scale(float size, int scale = interfacescale) {
-        return size*POW(2.0, scale);
+        if (scale == 0) return size;
+        if (scale == 1) return size*1.5;
+        if (scale == 2) return size*2;
+        if (scale == 3) return size*4;
+
+        return size;
     }
 
     float particleopacity = 1.0;
@@ -245,17 +250,19 @@ namespace Interface {
     string scalestr(int scale) {
         switch (scale) {
             case 0: return "x1";
-            case 1: return "x2";
-            case 2: return "x4";
+            case 1: return "x1.5";
+            case 2: return "x2";
+            case 3: return "x4";
         }
 
-        return "x2";
+        return "x1.5";
     }
 
     int strscale(string str) {
         if (str == "x1") return 0;
-        if (str == "x2") return 1;
-        if (str == "x4") return 2;
+        if (str == "x1.5") return 1;
+        if (str == "x2") return 2;
+        if (str == "x4") return 3;
 
         return 1;
     }
@@ -382,7 +389,7 @@ namespace Interface {
             raw.destroy();
         }
 
-        for (uint i = 0; i < 3; i++) {
+        for (uint i = 0; i < 4; i++) {
             fontMedium[i] = GUI::LoadTTF(FONT_PATH, Scale(16.0, i));
         }
 
@@ -694,9 +701,11 @@ namespace Interface {
             ImGui::Text("Interface scale:");
             if (ImGui::RadioButton("x1", &interfacescale, 0)) StyleRescale();
             ImGui::SameLine();
-            if (ImGui::RadioButton("x2", &interfacescale, 1)) StyleRescale();
+            if (ImGui::RadioButton("x1.5", &interfacescale, 1)) StyleRescale();
             ImGui::SameLine();
-            if (ImGui::RadioButton("x4", &interfacescale, 2)) StyleRescale();
+            if (ImGui::RadioButton("x2", &interfacescale, 2)) StyleRescale();
+            ImGui::SameLine();
+            if (ImGui::RadioButton("x4", &interfacescale, 3)) StyleRescale();
 
             if (ImGui::Checkbox("Fullscreen mode", &fullscreen)) updateFullscreen();
             KeyHint("[F11]", 10.0);
