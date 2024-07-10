@@ -71,6 +71,7 @@ namespace Interface {
     }
 
     float particleopacity = 1.0;
+    float connectionopacity = 1.0;
     float particlesize = 1.0;
     float particleglow = 1.0;
     float particlehole = 1.0;
@@ -516,6 +517,7 @@ namespace Interface {
                 particlesize,
                 particleglow,
                 particlehole,
+                connectionopacity,
                 (escaping ? vec3(0.5):vec3(1.0))*vec3(colorTone[0], colorTone[1], colorTone[2]),
                 glowing,
                 escaping
@@ -648,6 +650,8 @@ namespace Interface {
                 ImGui::SliderFloat("Particle size", &particlesize, 0.2, 1.0, "%.2f");
                 ImGui::SetNextItemWidth(Scale(100.0));
                 ImGui::SliderFloat("Particle hole", &particlehole, 0.0, 1.0, "%.2f");
+                ImGui::SetNextItemWidth(Scale(100.0));
+                ImGui::SliderFloat("Connection opacity", &connectionopacity, 0.0, 1.0, "%.2f");
 
                 ImGui::Checkbox("Addition effect", &glowing);
                 if (ImGui::Checkbox("Post-processing", &postproc)) recreateRender();
@@ -811,9 +815,24 @@ namespace Interface {
                 CollapsingEnd;
             }
 
-            ImGui::Checkbox("Connections", &rule.connections);
+            CollapsingHeader("Connections") {
+                WarnText("Connections: Unreleased feature (billet)!");
 
-            if (rule.connections) WarnText("Connections: Unreleased feature (billet)!");
+                ImGui::Checkbox("Connections", &rule.connections);
+
+                ImGui::SetNextItemWidth(Scale(60.0));
+                DragFloat("Attraction strength", &rule.connectionAttraction, 0.0001, 0.0, 0.1, "%.3f");
+                ImGui::SetNextItemWidth(Scale(60.0));
+                DragFloat("Replusion strength", &rule.connectionReplusion, 0.0001, 0.0, 0.1, "%.3f");
+                ImGui::SetNextItemWidth(Scale(60.0));
+                DragFloat("Connection distance", &rule.connectionDistance, 0.1, 0.0, 10000.0, "%.0f");
+                ImGui::SetNextItemWidth(Scale(60.0));
+                DragFloat("Normal length", &rule.connectionNormal, 0.1, 0.0, 10000.0, "%.0f");
+                ImGui::SetNextItemWidth(Scale(60.0));
+                DragFloat("Max length", &rule.connectionMax, 0.1, 0.0, 10000.0, "%.0f");
+
+                CollapsingEnd;
+            }
 
             ImGui::End();
         }

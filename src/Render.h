@@ -233,7 +233,12 @@ namespace Render {
                 }
             }
 
-            void render(vec2 camera, float zoom, float particleopacity, float particlesize, float particleglow, float particlehole, vec3 clrmul, bool glowing, bool strongblur) {
+            void render(
+                vec2 camera, float zoom,
+                float particleopacity, float particlesize, float particleglow, float particlehole,
+                float connectionopacity,
+                vec3 clrmul, bool glowing, bool strongblur
+            ) {
                 if (!ok) return;
 
                 uint ww = window->getWidth();
@@ -334,6 +339,7 @@ namespace Render {
                     }
 
                     programConnection->use();
+                    glUniform1f(programConnection->uniform("uOpacity"), connectionopacity);
 
                     connectionVertexBuffer->bind();
                     connectionVertexBuffer->data(connections, connectionCount*12*sizeof(GLfloat), GL_DYNAMIC_DRAW);

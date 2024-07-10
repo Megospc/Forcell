@@ -82,7 +82,10 @@ namespace Simulation {
         bool connections = false;
 
         float connectionNormal = 100.0;
-        float connectionStrength = 0.0001;
+        float connectionDistance = 100.0;
+        float connectionAttraction = 0.01;
+        float connectionReplusion = 0.0;
+        float connectionMax = 200.0;
 
         void clamp() {
             SCLAMP(types, 1, 10);
@@ -214,6 +217,8 @@ namespace Simulation {
                     float d2 = dx*dx+dy*dy;
 
                     if (d2 > r2) continue;
+
+                    if (d2 < 1.0) dx = 1.0, d2 = 1.0, dy = 0.0;
 
                     float f = -force/d2;
 
@@ -490,7 +495,7 @@ namespace Simulation {
         TASK2_CLASSIC(name, extensions);
     
     #define TASKFN_EXT_CONNECTIONS {\
-        float maxd = rule->connectionNormal; \
+        float maxd = rule->connectionDistance; \
         float maxd2 = maxd*maxd; \
         \
         if (d2 < maxd2 && !isConnected(i, j)) { \
@@ -567,14 +572,17 @@ namespace Simulation {
 
                 float d = SQRT(dx*dx+dy*dy);
 
-                float f = 0.0;
+                if (d < 0.001) dx = 1.0, dy = 0.0, d = 1.0;
 
-                if (d > rule->connectionNormal) {
-                    f += (d-rule->connectionNormal)*rule->connectionStrength;
-                }
+                if (d >= rule->connectionMax) killConnect(i, j);
 
-                a->vx += dx*f;
-                a->vy += dy*f;
+                float f = d-rule->connectionNormal;
+
+                if (d > rule->connectionNormal) f *= rule->connectionAttraction;
+                else f *= rule->connectionReplusion;
+
+                a->vx += dx*f/d;
+                a->vy += dy*f/d;
             }
 
             a->x += a->vx*speedup/a->mass;
