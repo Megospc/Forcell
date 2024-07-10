@@ -79,6 +79,11 @@ namespace Simulation {
 
         float freqs[10] = { 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0 };
 
+        bool connections = false;
+
+        float connectionNormal = 100.0;
+        float connectionStrength = 0.0001;
+
         void clamp() {
             SCLAMP(types, 1, 10);
         }
@@ -138,6 +143,8 @@ namespace Simulation {
         float size;
         float mass;
         int type;
+        int connections[5];
+        int connis[5]; // Connection IDs
     };
 
     int GetParticleType(Rule* rule, float v) {
@@ -183,6 +190,8 @@ namespace Simulation {
                     particles[i].size = Rand::Range(10.0/mspread, 10.0*mspread);
                     particles[i].type = GetParticleType(rule, (float)i/(particlesCount-1)*sumfreq);
 
+                    for (uint j = 0; j < 5; j++) particles[i].connections[j] = -1;
+
                     particles[i].mass = particles[i].size*particles[i].size/100.0;
                 }
 
@@ -219,6 +228,14 @@ namespace Simulation {
             void task2const(uint, uint);
             void task1classic(uint, uint);
             void task2classic(uint, uint);
+
+            void task1forcell_connections(uint, uint);
+            void task2forcell_connections(uint, uint);
+            void task1const_connections(uint, uint);
+            void task2const_connections(uint, uint);
+            void task1classic_connections(uint, uint);
+            void task2classic_connections(uint, uint);
+
             void step(uint, float);
 
             float width, height;
@@ -230,7 +247,55 @@ namespace Simulation {
             Rule* rule;
 
             uint frame;
-            
+
+        private:
+            bool isConnected(uint a, uint b) {
+                int* connections = particles[a].connections;
+
+                return connections[0] == b ||
+                    connections[1] == b ||
+                    connections[2] == b ||
+                    connections[3] == b ||
+                    connections[4] == b;
+            }
+
+            int canConnect(uint a, uint b) {
+                for (uint i = 0; i < 5; i++) {
+                    uint pnew = 1;
+                    uint pcur = particles[a].connections[i] == -1 ? 0:1;
+
+                    if (pnew > pcur) return i;
+                }
+
+                return -1;
+            }
+
+            void killConnect(uint a, uint i) {
+                Particle* p = &particles[a];
+
+                if (p->connections[i] == -1) return;
+                
+                particles[p->connections[i]].connections[p->connis[i]] = -1;
+                particles[a].connections[i] = -1;
+            }
+
+            void tryConnect(uint a, uint b) {
+                int acan = canConnect(a, b);
+
+                if (acan == -1) return;
+
+                int bcan = canConnect(b, a);
+
+                if (bcan == -1) return;
+
+                killConnect(a, acan);
+                killConnect(b, bcan);
+
+                particles[a].connections[acan] = b;
+                particles[a].connis[acan] = bcan;
+                particles[b].connections[bcan] = a;
+                particles[b].connis[bcan] = acan;
+            } 
     };
 
     // Some very complex manipulations with #define to create to create many variants of one function easier.
@@ -409,39 +474,49 @@ namespace Simulation {
         ) \
     )
 
-    TASKFN_FORCELL(task1forcell, // One table, forcell force type
-        TASKFN_FORCE
-    )
-    TASKFN_FORCELL(task2forcell, // Two tables, forcell force type
-        TASKFN_FORCEADD(zones, forces)
-        TASKFN_FORCEADD(zones2, forces2)
-    )
+    #define TASK1_FORCELL(name, extensions) TASKFN_FORCELL(task1forcell##name, TASKFN_FORCE extensions)
+    #define TASK2_FORCELL(name, extensions) TASKFN_FORCELL(task2forcell##name, TASKFN_FORCEADD(zones, forces) TASKFN_FORCEADD(zones2, forces2) extensions)
+    #define TASK1_CONST(name, extensions) TASKFN_CONSTANT(task1const##name, TASKFN_CONST_FORCE extensions)
+    #define TASK2_CONST(name, extensions) TASKFN_CONSTANT(task2const##name, TASKFN_CONST_FORCEADD(zones, forces) TASKFN_CONST_FORCEADD(zones2, forces2) extensions)
+    #define TASK1_CLASSIC(name, extensions) TASKFN_CLASSIC(task1classic##name, TASKFN_CLASSIC_FORCE extensions)
+    #define TASK2_CLASSIC(name, extensions) TASKFN_CLASSIC(task2classic##name, TASKFN_CLASSIC_FORCEADD(zones, forces) TASKFN_CLASSIC_FORCEADD(zones2, forces2) extensions)
 
-    TASKFN_CONSTANT(task1const, // One table, constant force type
-        TASKFN_CONST_FORCE
-    )
-    TASKFN_CONSTANT(task2const, // Two tables, constant force type
-        TASKFN_CONST_FORCEADD(zones, forces)
-        TASKFN_CONST_FORCEADD(zones2, forces2)
-    )
+    #define TASKFN_EXTENSER(name, extensions) \
+        TASK1_FORCELL(name, extensions); \
+        TASK2_FORCELL(name, extensions); \
+        TASK1_CONST(name, extensions); \
+        TASK2_CONST(name, extensions); \
+        TASK1_CLASSIC(name, extensions); \
+        TASK2_CLASSIC(name, extensions);
+    
+    #define TASKFN_EXT_CONNECTIONS {\
+        float maxd = rule->connectionNormal; \
+        float maxd2 = maxd*maxd; \
+        \
+        if (d2 < maxd2 && !isConnected(i, j)) { \
+            tryConnect(i, j); \
+        } \
+    }
 
-    TASKFN_CLASSIC(task1classic, // One table, classic force type
-        TASKFN_CLASSIC_FORCE
-    )
-    TASKFN_CLASSIC(task2classic, // Two tables, classic force type
-        TASKFN_CLASSIC_FORCEADD(zones, forces)
-        TASKFN_CLASSIC_FORCEADD(zones2, forces2)
-    )
+    #define TASKFN_EXTUSER(name) \
+        if (self->rule->secondtable) { \
+            if (self->rule->forcetype == 0) self->task2forcell##name(start, end); \
+            if (self->rule->forcetype == 1) self->task2const##name(start, end); \
+            if (self->rule->forcetype == 2) self->task2classic##name(start, end); \
+        } else { \
+            if (self->rule->forcetype == 0) self->task1forcell##name(start, end); \
+            if (self->rule->forcetype == 1) self->task1const##name(start, end); \
+            if (self->rule->forcetype == 2) self->task1classic##name(start, end); \
+        }
+    
+    TASKFN_EXTENSER(,); // No extensions
+    TASKFN_EXTENSER(_connections, TASKFN_EXT_CONNECTIONS); // Connections
 
     void task(Simulation* self, uint start, uint end) {
-        if (self->rule->secondtable) {
-            if (self->rule->forcetype == 0) self->task2forcell(start, end);
-            if (self->rule->forcetype == 1) self->task2const(start, end);
-            if (self->rule->forcetype == 2) self->task2classic(start, end);
+        if (self->rule->connections) {
+            TASKFN_EXTUSER(_connections);
         } else {
-            if (self->rule->forcetype == 0) self->task1forcell(start, end);
-            if (self->rule->forcetype == 1) self->task1const(start, end);
-            if (self->rule->forcetype == 2) self->task1classic(start, end);
+            TASKFN_EXTUSER();
         }
     }
 
@@ -451,6 +526,10 @@ namespace Simulation {
         float curstart = 0.0;
         float sumtask = particlesCount;
         float perthread = sumtask/threadcount;
+
+        #ifndef NDEBUG
+        Logger::Bench::Start();
+        #endif
 
         for (uint i = 0; i < threadcount; i++) {
             threads[i] = new std::thread(
@@ -466,9 +545,37 @@ namespace Simulation {
         for (uint i = 0; i < threadcount; i++) threads[i]->join();
 
         for (uint i = 0; i < threadcount; i++) delete threads[i];
+        
+        #ifndef NDEBUG
+        Log("Main process: " << Logger::Bench::End() << "ms");
+
+        Logger::Bench::Start();
+        #endif
 
         for (uint i = 0; i < particlesCount; i++) {
             Particle* a = &particles[i];
+
+            if (rule->connections) for (uint j = 0; j < 5; j++) {
+                uint bi = a->connections[j];
+
+                if (bi == -1) continue;
+
+                Particle* b = &particles[bi];
+
+                float dx = b->x-a->x;
+                float dy = b->y-a->y;
+
+                float d = SQRT(dx*dx+dy*dy);
+
+                float f = 0.0;
+
+                if (d > rule->connectionNormal) {
+                    f += (d-rule->connectionNormal)*rule->connectionStrength;
+                }
+
+                a->vx += dx*f;
+                a->vy += dy*f;
+            }
 
             a->x += a->vx*speedup/a->mass;
             a->y += a->vy*speedup/a->mass;
@@ -484,6 +591,10 @@ namespace Simulation {
             if (a->x >= width-a->size) a->x = width-a->size, a->vx = IABS(a->vx);
             if (a->y >= height-a->size) a->y = height-a->size, a->vy = IABS(a->vy);
         }
+
+        #ifndef NDEBUG
+        Log("After-forces process: " << Logger::Bench::End() << "ms");
+        #endif
 
         frame++;
     }

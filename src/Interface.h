@@ -3,7 +3,7 @@
 #define FONT_PATH "assets/Reef/Reef.ttf"
 
 #define ZOOM_STEP 1.01
-#define MAX_ZOOM 100.0
+#define MAX_ZOOM 150.0
 #define MIN_ZOOM -30.0
 #define CAMERA_STEP 0.1
 
@@ -479,6 +479,10 @@ namespace Interface {
         ImGui::SameLine(ImGui::GetWindowContentRegionMax().x-Scale(15.0+offset));
         ImGui::TextColored(ImVec4(1.0, 1.0, 1.0, 0.3), key.c_str());
     }
+
+    void WarnText(cstr text) {
+        ImGui::TextColored(ImVec4(1.0, 1.0, 0.2, 1.0), text);
+    }
     
     void frame() {
         ImVec2 buttonTiny = ImVec2(Scale(18.0), Scale(18.0));
@@ -618,14 +622,14 @@ namespace Interface {
 
             ImGui::SetNextItemWidth(Scale(100.0));
             ImGui::InputInt("CPU threads", &threadcount, 1, 8);
-            SCLAMP(threadcount, 1, 1024);
+            SCLAMP(threadcount, 1, MAX_SIMULATION_THREADS);
 
             SmallOffset("pre-speedup");
 
             ImGui::SetNextItemWidth(Scale(50.0));
             DragFloat("Speed-up", &speedup, 0.0005, 1.0, 2.0, "x%.1f");
             ImGui::SameLine();
-            ImGui::TextColored(ImVec4(1.0, 1.0, 0.2, 1.0), "unrecommended");
+            WarnText("unrecommended");
 
             ImGui::End();
         }
@@ -806,6 +810,10 @@ namespace Interface {
 
                 CollapsingEnd;
             }
+
+            ImGui::Checkbox("Connections", &rule.connections);
+
+            if (rule.connections) WarnText("Connections: Unreleased feature (billet)!");
 
             ImGui::End();
         }
