@@ -99,17 +99,17 @@ namespace Simulation {
             for (uint i = 0; i < 10; i++) freqs[i] = Rand::Range(0.01, 1.00);
 
             for (uint i = 0; i < 100; i++) {
-                float f = Rand::Range(0.0, SQRT(2.0));
+                float f = Rand::Range(0.0, 2.0);
 
-                forces[i] = Rand::Sign()*f*f;
+                forces[i] = Rand::Sign()*f;
 
                 float r = Rand::Range(0.0, SQRT(1000.0));
 
                 zones[i] = r*r;
 
-                float f2 = Rand::Range(0.0, SQRT(2.0));
+                float f2 = Rand::Range(0.0, 2.0);
 
-                forces2[i] = Rand::Sign()*f2*f2-forces[i];
+                forces2[i] = Rand::Sign()*f2-forces[i];
 
                 float r2 = Rand::Range(0.0, SQRT(1000.0));
 

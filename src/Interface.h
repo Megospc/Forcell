@@ -478,7 +478,7 @@ namespace Interface {
                         ImGui::SetNextItemWidth(Scale(30.0));
 
                         if (forces) {
-                            float v = CLAMPMAX(ptr[i+j*10], 1.0);
+                            float v = CLAMP(ptr[i+j*10], -1.0, 1.0);
 
                             float r = v < 0.0 ? -v : v/3.0;
                             float g = v > 0.0 ? v : -v/3.0;
