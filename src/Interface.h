@@ -75,6 +75,7 @@ namespace Interface {
     float particlesize = 1.0;
     float particleglow = 1.0;
     float particlehole = 1.0;
+    float connectionwidth = 1.0;
 
     float zoom() {
         return POW(ZOOM_STEP, zoomsteps);
@@ -540,6 +541,7 @@ namespace Interface {
                 particleglow,
                 particlehole,
                 connectionopacity,
+                connectionwidth,
                 (escaping ? vec3(0.5):vec3(1.0))*vec3(colorTone[0], colorTone[1], colorTone[2]),
                 glowing,
                 escaping
@@ -674,6 +676,8 @@ namespace Interface {
                 ImGui::SliderFloat("Particle hole", &particlehole, 0.0, 1.0, "%.2f");
                 ImGui::SetNextItemWidth(Scale(100.0));
                 ImGui::SliderFloat("Connection opacity", &connectionopacity, 0.0, 1.0, "%.2f");
+                ImGui::SetNextItemWidth(Scale(100.0));
+                ImGui::SliderFloat("Connection width", &connectionwidth, 0.0, 1.0, "%.2f");
 
                 ImGui::Checkbox("Addition effect", &glowing);
                 if (ImGui::Checkbox("Post-processing", &postproc)) recreateRender();

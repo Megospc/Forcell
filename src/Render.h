@@ -236,7 +236,7 @@ namespace Render {
             void render(
                 vec2 camera, float zoom,
                 float particleopacity, float particlesize, float particleglow, float particlehole,
-                float connectionopacity,
+                float connectionopacity, float connectionwidth,
                 vec3 clrmul, bool glowing, bool strongblur
             ) {
                 if (!ok) return;
@@ -299,6 +299,9 @@ namespace Render {
 
                             Simulation::Particle* b = &simulation->particles[c];
 
+                            float dx = b->x-a->x, dy = b->y-a->y;
+                            float d = SQRT(dx*dx+dy*dy);
+
                             uint k = connectionCount*12;
                             uint l = connectionCount*6;
 
@@ -308,7 +311,7 @@ namespace Render {
                             vec2 oma = (vo-va).normalize();
                             vec2 bmo = (vb-vo).normalize();
 
-                            float w = 2.0;
+                            float w = connectionwidth/CLAMPMIN(d/simulation->rule->connectionNormal, 1.0)*2.0;
 
                             vec2 v1 = va+rotate90(oma)*w;
                             vec2 v2 = va-rotate90(oma)*w;
