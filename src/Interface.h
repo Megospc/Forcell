@@ -440,12 +440,19 @@ namespace Interface {
         SCLAMP(*v, min, max);
     }
 
+    ImVec2 TableSize() {
+        return ImVec2(
+            ImGui::GetWindowContentRegionMax().x-50.0,
+            Scale(150.0)
+        );
+    }
+
     void RuleTable(cstr id, float* ptr, float min, float max, float speed, cstr fmt) {
         if (ImGui::BeginTable(
             id,
             rule.types+2,
             ImGuiTableFlags_Borders | ImGuiTableFlags_ScrollX | ImGuiTableFlags_ScrollY,
-            ImVec2(Scale(180.0), Scale(140.0))
+            TableSize()
         )) {
             ImGui::TableSetupScrollFreeze(1, 1);
             
@@ -491,7 +498,7 @@ namespace Interface {
         ImVec2 buttonMedium = ImVec2(Scale(80.0), Scale(18.0));
         ImVec2 buttonDouble = ImVec2(Scale(160.0)+GUI::style->ItemSpacing.x, Scale(18.0));
 
-        static float shoveforce = 10.0;
+        static float shoveforce = 100.0;
         static float shoveradius = 100.0;
 
         if (!pause) for (uint i = 0; i < stepsperframe; i++) {
@@ -713,7 +720,7 @@ namespace Interface {
                 ImGui::SetNextItemWidth(Scale(60.0));
                 DragFloat("Radius", &shoveradius, 0.1, 0.0, 10000.0, "%.0f");
                 ImGui::SetNextItemWidth(Scale(60.0));
-                DragFloat("Force", &shoveforce, 0.01, 0.0, 1000.0, "%.1f");
+                DragFloat("Force", &shoveforce, 0.1, 0.0, 1000.0, "%.1f");
             }
 
             ImGui::End();
@@ -772,7 +779,7 @@ namespace Interface {
                 SmallOffset("rule-after-forces");
             }
 
-            CollapsingHeader("Max. interaction distances") {
+            CollapsingHeader("Interaction distances") {
                 RuleTable("zonetable", rule.zones, 0.0, 10000.0, 1.0, "%.0f");
 
                 CollapsingEnd;
@@ -791,7 +798,7 @@ namespace Interface {
                     SmallOffset("rule-after-forces2");
                 }
 
-                CollapsingHeader("Max. interaction distances 2") {
+                CollapsingHeader("Interaction distances 2") {
                     RuleTable("zonetable2", rule.zones2, 0.0, 10000.0, 1.0, "%.0f");
 
                     CollapsingEnd;
@@ -816,7 +823,7 @@ namespace Interface {
             }
 
             CollapsingHeader("Connections") {
-                WarnText("Connections: Unreleased feature (billet)!");
+                WarnText("Beta Feature: The following data will not be saved in the rule file!");
 
                 ImGui::Checkbox("Connections", &rule.connections);
 
@@ -830,6 +837,84 @@ namespace Interface {
                 DragFloat("Normal length", &rule.connectionNormal, 0.1, 0.0, 10000.0, "%.0f");
                 ImGui::SetNextItemWidth(Scale(60.0));
                 DragFloat("Max length", &rule.connectionMax, 0.1, 0.0, 10000.0, "%.0f");
+
+                if (ImGui::BeginTable(
+                    "connectiontable",
+                    5+2, ImGuiTableFlags_Borders | ImGuiTableFlags_ScrollX | ImGuiTableFlags_ScrollY,
+                    TableSize()
+                )) {
+                    ImGui::TableSetupScrollFreeze(1, 1);
+            
+                    for (int j = -1; j < rule.types; j++) {
+                        ImGui::TableNextRow();
+
+                        if (j >= 0) {
+                            ImGui::TableSetColumnIndex(0);
+
+                            ColorLabel(string("##rownamesconnections")+std::to_string(j), GetTypeColor(j), ImVec2(Scale(28.0), Scale(18.0)));
+
+                            ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, Scale(1.0));
+                            ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(Scale(3.0), 0.0));
+
+                            for (uint i = 0; i < 5; i++) {
+                                ImGui::TableSetColumnIndex(i+1);
+
+                                ImGui::InvisibleButton(
+                                    (string("##connections")+std::to_string(i)+"-"+std::to_string(j)).c_str(),
+                                    ImVec2(Scale(5.0), 1.0)
+                                );
+                                ImGui::SameLine();
+
+                                ImGui::SetNextItemWidth(Scale(30.0));
+
+                                for (uint k = 0; k < 2; k++) {
+                                    int* ptr = &rule.connectionsPriority[j*10+i*2+k];
+
+                                    ImVec4 clr = *ptr == -1 ? ImVec4(1.0, 1.0, 1.0, 0.2):GetTypeColor(*ptr);
+
+                                    ImVec4 clrDefault = clr;
+                                    clrDefault.w *= 0.5;
+                                    ImVec4 clrActive = clrDefault;
+                                    clrActive.w += 0.2;
+                                    ImVec4 clrHover = clrDefault;
+                                    clrHover.w += 0.4;
+
+                                    ImGui::PushStyleColor(ImGuiCol_FrameBg, clrDefault);
+                                    ImGui::PushStyleColor(ImGuiCol_FrameBgActive, clrActive);
+                                    ImGui::PushStyleColor(ImGuiCol_FrameBgHovered, clrHover);
+                                    
+                                    ImGui::SetNextItemWidth(Scale(15.0));
+                                    DragInt((string("##connections")+std::to_string(i)+"-"+std::to_string(j)+"-"+std::to_string(k)).c_str(), ptr, 0.02, -2, rule.types, *ptr == -1 || *ptr == rule.types ? "-":"%d");
+                                    ImGui::SameLine();
+
+                                    if (*ptr == rule.types) *ptr = -1;
+                                    if (*ptr == -2) *ptr = rule.types-1;
+
+                                    ImGui::PopStyleColor(3);
+                                }
+
+                                ImGui::InvisibleButton(
+                                    (string("##connections")+std::to_string(i)+"-"+std::to_string(j)).c_str(),
+                                    ImVec2(Scale(5.0), 1.0)
+                                );
+                            }
+
+                            ImGui::PopStyleVar(2);
+                        } else {
+                            for (uint i = 0; i < 5; i++) {
+                                ImGui::TableSetColumnIndex(i+1);
+
+                                ImGui::Text("Slot %d", i+1);
+                            }
+                        }
+                    }
+
+                    ImGui::EndTable();
+                }
+
+                if (ImGui::Button("Clear", buttonDouble)) {
+                    for (uint i = 0; i < 100; i++) rule.connectionsPriority[i] = -1;
+                }
 
                 CollapsingEnd;
             }

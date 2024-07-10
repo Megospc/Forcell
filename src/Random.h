@@ -38,4 +38,8 @@ namespace Rand {
     float Sign() {
         return Chance(0.5) ? 1:-1;
     }
+
+    int Int(int max) {
+        return (int)(Float()*max);
+    }
 }

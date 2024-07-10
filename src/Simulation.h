@@ -87,6 +87,8 @@ namespace Simulation {
         float connectionReplusion = 0.0;
         float connectionMax = 200.0;
 
+        int connectionsPriority[100];
+
         void clamp() {
             SCLAMP(types, 1, 10);
         }
@@ -117,6 +119,10 @@ namespace Simulation {
             friction = Rand::Range(0.001, 0.100);
             attractor = 0.0;
             bounceForce = Rand::Range(0.1, 0.4);
+
+            for (uint i = 0; i < 100; i++) {
+                connectionsPriority[i] = Rand::Chance(0.5) ? Rand::Int(10):-1;
+            }
         }
 
         // Metadata
@@ -264,10 +270,25 @@ namespace Simulation {
                     connections[4] == b;
             }
 
+            int connectionPriority(uint atype, uint btype, uint i) {
+                int* p = &rule->connectionsPriority[atype*10+i*2];
+
+                if (p[0] == btype) return 2;
+                if (p[1] == btype) return 1;
+
+                return 0;
+            }
+
             int canConnect(uint a, uint b) {
+                Particle* pa = &particles[a];
+                Particle* pb = &particles[b];
+                
                 for (uint i = 0; i < 5; i++) {
-                    uint pnew = 1;
-                    uint pcur = particles[a].connections[i] == -1 ? 0:1;
+                    uint c = pa->connections[i];
+
+                    uint pnew = connectionPriority(pa->type, pb->type, i);
+                    uint pcur = c == -1 ? 0:
+                        connectionPriority(pa->type, particles[c].type, i);
 
                     if (pnew > pcur) return i;
                 }
