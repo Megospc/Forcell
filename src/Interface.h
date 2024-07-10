@@ -447,7 +447,7 @@ namespace Interface {
         );
     }
 
-    void RuleTable(cstr id, float* ptr, float min, float max, float speed, cstr fmt) {
+    void RuleTable(cstr id, float* ptr, float min, float max, float speed, cstr fmt, bool forces = false) {
         if (ImGui::BeginTable(
             id,
             rule.types+2,
@@ -468,7 +468,22 @@ namespace Interface {
                         ImGui::TableSetColumnIndex(i+1);
 
                         ImGui::SetNextItemWidth(Scale(30.0));
+
+                        if (forces) {
+                            float v = CLAMPMAX(ptr[i+j*10], 1.0);
+
+                            float r = v < 0.0 ? -v : v/3.0;
+                            float g = v > 0.0 ? v : -v/3.0;
+                            float b = ABS(v)/3.0;
+
+                            ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(r, g, b, 0.7));
+                            ImGui::PushStyleColor(ImGuiCol_FrameBgActive, ImVec4(r, g, b, 0.8));
+                            ImGui::PushStyleColor(ImGuiCol_FrameBgHovered, ImVec4(r, g, b, 1.0));
+                        }
+
                         DragFloat((string("##")+id+std::to_string(i)+"-"+std::to_string(j)).c_str(), &ptr[i+j*10], speed, min, max, fmt);
+
+                        if (forces) ImGui::PopStyleColor(3);
                     }
                 } else {
                     for (uint i = 0; i < rule.types; i++) {
@@ -772,7 +787,7 @@ namespace Interface {
             }
 
             CollapsingHeader("Forces") {
-                RuleTable("forcetable", rule.forces, -2.0, 2.0, 0.001, "%.2f");
+                RuleTable("forcetable", rule.forces, -2.0, 2.0, 0.001, "%.2f", true);
 
                 CollapsingEnd;
 
@@ -791,7 +806,7 @@ namespace Interface {
 
             if (rule.secondtable) {
                 CollapsingHeader("Forces 2") {
-                    RuleTable("forcetable2", rule.forces2, -4.0, 4.0, 0.001, "%.2f");
+                    RuleTable("forcetable2", rule.forces2, -4.0, 4.0, 0.001, "%.2f", true);
 
                     CollapsingEnd;
 
