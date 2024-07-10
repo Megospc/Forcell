@@ -70,6 +70,15 @@ namespace Render {
 
                 GL_DEBUG_MARKER("created programFiller");
 
+                programConnection = loadProgram(
+                    "shaders/connection-vertex.glsl",
+                    "shaders/connection-fragment.glsl"
+                , "connection");
+
+                if (!programConnection->isOk()) goto unsuccess;
+
+                GL_DEBUG_MARKER("created programConnection");
+
                 if (pp) {
                     programRender = loadProgram(
                         "shaders/filltex-vertex.glsl",
@@ -103,6 +112,7 @@ namespace Render {
                 }
 
                 particleVAO = new GL::VertexArray();
+                connectionVAO = new GL::VertexArray();
                 quadVAO = new GL::VertexArray();
 
                 vertexBuffer = new GL::AttribBuffer();
@@ -110,6 +120,11 @@ namespace Render {
                 sizeBuffer = new GL::AttribBuffer();
                 typeBuffer = new GL::AttribBuffer();
                 quadVertexBuffer = new GL::AttribBuffer();
+                connectionVertexBuffer = new GL::AttribBuffer();
+                connectionTypeBuffer = new GL::AttribBuffer();
+
+                connections = MALLOC(GLfloat, simulation->particlesCount*5*12);
+                connectionTypes = MALLOC(GLint, simulation->particlesCount*5*6);
 
                 GL_DEBUG_MARKER("created objects");
 
@@ -152,9 +167,29 @@ namespace Render {
 
                 GL_DEBUG_MARKER("quadVAO ready");
 
+                connectionVAO->bind();
+
+                connectionVertexBuffer->bind();
+                connectionVertexBuffer->setLocation(0);
+                connectionVertexBuffer->enable(2, GL_FLOAT, sizeof(GLfloat));
+                connectionVertexBuffer->unbind();
+
+                connectionTypeBuffer->bind();
+                connectionTypeBuffer->setLocation(1);
+                connectionTypeBuffer->enable(1, GL_INT, sizeof(GLint));
+                connectionTypeBuffer->unbind();
+
+                connectionVAO->unbind();
+
+                GL_DEBUG_MARKER("connectionVAO ready");
+
                 programParticle->use();
                 glUniform3fv(programParticle->uniform("uBaseColors"), 10*3, baseColors);
                 glUniform2f(programParticle->uniform("uSimSize"), simulation->width, simulation->height);
+
+                programConnection->use();
+                glUniform3fv(programConnection->uniform("uBaseColors"), 10*3, baseColors);
+                glUniform2f(programConnection->uniform("uSimSize"), simulation->width, simulation->height);
 
                 GL_DEBUG_MARKER("ready");
 
@@ -170,8 +205,10 @@ namespace Render {
             ~Render() {
                 delete programParticle;
                 delete programFiller;
+                delete programConnection;
 
                 delete particleVAO;
+                delete connectionVAO;
                 delete quadVAO;
 
                 delete vertexBuffer;
@@ -179,6 +216,11 @@ namespace Render {
                 delete sizeBuffer;
                 delete typeBuffer;
                 delete quadVertexBuffer;
+                delete connectionVertexBuffer;
+                delete connectionTypeBuffer;
+
+                free(connections);
+                free(connectionTypes);
 
                 if (pp) {
                     ppCleanup();
@@ -233,6 +275,77 @@ namespace Render {
                     GL::Clear(0.0, 0.0, 0.0);
                     fill(0.0, 0.0, 0.2);
                     GL::EnableBlending(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+                }
+
+                if (simulation->rule->connections) {
+                    connectionVAO->bind();
+
+                    uint connectionCount = 0;
+
+                    for (uint i = 0; i < simulation->particlesCount; i++) {
+                        Simulation::Particle* a = &simulation->particles[i];
+
+                        vec2 va = vec2(a->x, a->y);
+
+                        for (uint j = 0; j < 5; j++) {
+                            uint c = a->connections[j];
+
+                            if (c == -1) continue;
+
+                            Simulation::Particle* b = &simulation->particles[c];
+
+                            uint k = connectionCount*12;
+                            uint l = connectionCount*6;
+
+                            vec2 vb = vec2(b->x, b->y);
+                            vec2 vo = va+(vb-va)/2.0;
+
+                            vec2 oma = (vo-va).normalize();
+                            vec2 bmo = (vb-vo).normalize();
+
+                            float w = 2.0;
+
+                            vec2 v1 = va+rotate90(oma)*w;
+                            vec2 v2 = va-rotate90(oma)*w;
+                            vec2 v3 = vb+rotate90(oma)*w;
+                            vec2 v4 = vb-rotate90(oma)*w;
+
+                            int t1 = a->type;
+                            int t2 = a->type;
+                            int t3 = b->type;
+                            int t4 = b->type;
+
+                            connections[k] = v2.x, connections[k+1] = v2.y;
+                            connections[k+2] = v1.x, connections[k+3] = v1.y;
+                            connections[k+4] = v4.x, connections[k+5] = v4.y;
+                            connections[k+6] = v2.x, connections[k+7] = v2.y;
+                            connections[k+8] = v3.x, connections[k+9] = v3.y;
+                            connections[k+10] = v4.x, connections[k+11] = v4.y;
+
+                            connectionTypes[l] = t2;
+                            connectionTypes[l+1] = t1;
+                            connectionTypes[l+2] = t4;
+                            connectionTypes[l+3] = t2;
+                            connectionTypes[l+4] = t3;
+                            connectionTypes[l+5] = t4;
+
+                            connectionCount++;
+                        }
+                    }
+
+                    programConnection->use();
+
+                    connectionVertexBuffer->bind();
+                    connectionVertexBuffer->data(connections, connectionCount*12*sizeof(GLfloat), GL_DYNAMIC_DRAW);
+                    connectionVertexBuffer->unbind();
+
+                    connectionTypeBuffer->bind();
+                    connectionTypeBuffer->data(connectionTypes, connectionCount*6*sizeof(GLint), GL_DYNAMIC_DRAW);
+                    connectionTypeBuffer->unbind();
+
+                    glDrawArrays(GL_TRIANGLES, 0, connectionCount*6);
+
+                    connectionVAO->unbind();
                 }
 
                 particleVAO->bind();
@@ -307,16 +420,23 @@ namespace Render {
             GL::Window* window;
 
             GL::VertexArray* particleVAO;
+            GL::VertexArray* connectionVAO;
             GL::VertexArray* quadVAO;
 
             GL::Program* programParticle;
             GL::Program* programFiller;
+            GL::Program* programConnection;
 
             GL::AttribBuffer* vertexBuffer;
             GL::AttribBuffer* positionBuffer;
             GL::AttribBuffer* sizeBuffer;
             GL::AttribBuffer* typeBuffer;
             GL::AttribBuffer* quadVertexBuffer;
+            GL::AttribBuffer* connectionVertexBuffer;
+            GL::AttribBuffer* connectionTypeBuffer;
+
+            GLfloat* connections;
+            GLint* connectionTypes;
 
             uint frame;
 

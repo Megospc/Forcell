@@ -90,6 +90,10 @@ void writeStringToChar(char* target, string str) {
     target[str.length()] = '\0';
 }
 
+vec2 rotate90(vec2 v) {
+    return vec2(v.y, -v.x);
+}
+
 struct KeyVal {
     string key;
     string val;
