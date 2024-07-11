@@ -166,10 +166,22 @@ namespace Interface {
         }
     }
 
+    bool zoomtocursor = true;
+
     void mousewheel(float x, float y) {
+        vec2 pos1 = mousesim();
+
         zoomsteps += y*wheelsensitivity;
 
         SCLAMP(zoomsteps, MIN_ZOOM, MAX_ZOOM);
+
+        if (zoomtocursor) {
+            vec2 pos2 = mousesim();
+
+            vec2 d = pos2-pos1;
+
+            camera += d/simsize()*2.0;
+        }
     }
 
     void cleanup() {
@@ -287,6 +299,7 @@ namespace Interface {
         if (fullscreen) str += KeyVal("fullscreen", "");
         if (glowing) str += KeyVal("glowing", "");
         if (postproc) str += KeyVal("postprocessing", "");
+        if (zoomtocursor) str += KeyVal("zoom-to-mouse", "");
         
         if (windowperformance) str += KeyVal("window-performance", "");
         if (windowappearance) str += KeyVal("window-appearance", "");
@@ -331,6 +344,8 @@ namespace Interface {
         confignoupdate = false;
         postproc = false;
 
+        basecolor[0] = 0.26, basecolor[1] = 0.59, basecolor[2] = 0.98;
+
         windowperformance = false;
         windowappearance = false;
         windowcamera = false;
@@ -338,6 +353,7 @@ namespace Interface {
         windowrule = false;
         windowsettings = false;
         windowbuildinfo = false;
+        zoomtocursor = false;
 
         creatorname = "";
 
@@ -356,6 +372,7 @@ namespace Interface {
                 if (data.key == "fullscreen") fullscreen = true;
                 if (data.key == "glowing") {glowing = true;Log(8888);}
                 if (data.key == "postprocessing") postproc = true;
+                if (data.key == "zoom-to-mouse") zoomtocursor = true;
 
                 if (data.key == "window-performance") windowperformance = true;
                 if (data.key == "window-appearance") windowappearance = true;
@@ -871,6 +888,13 @@ namespace Interface {
 
             ImGui::SetNextItemWidth(Scale(60.0));
             DragFloat("Mouse wheel sensitivity", &wheelsensitivity, 0.05, 0.0, 1000.0, "%.1f");
+
+            vec2 mpos = mousesim();
+
+            if (vecpp::all(mpos >= 0.0) && vecpp::all(mpos <= simsize())) ImGui::Text("Mouse pointer: %.0f:%.0f", mpos.x, mpos.y);
+            else ImGui::TextDisabled("Mouse pointer: ?");
+
+            ImGui::Checkbox("Zoom to mouse pointer", &zoomtocursor);
 
             if (ImGui::Button("Go to center", buttonMedium)) camera = vec2(0.0, 0.0), zoomsteps = 0.0;
             KeyHint("[O]");
