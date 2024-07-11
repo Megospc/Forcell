@@ -43,6 +43,7 @@ namespace Interface {
     bool windowbuildinfo = false;
 
     float basecolor[3] = { 0.26, 0.59, 0.98 };
+    float rounding = 5.0;
 
     Simulation::Simulation* simulation = nullptr;
     Render::Render* render = nullptr;
@@ -307,6 +308,7 @@ namespace Interface {
         str += KeyVal("color-r", basecolor[0], "%.2f");
         str += KeyVal("color-g", basecolor[1], "%.2f");
         str += KeyVal("color-b", basecolor[2], "%.2f");
+        str += KeyVal("rounding", rounding, "%.0f");
 
         str += KeyVal("random-force-range", rndforcerange, "%.1f");
         str += KeyVal("random-zone-range", rndzonerange, "%.0f");
@@ -377,6 +379,7 @@ namespace Interface {
                 if (data.key == "color-r") basecolor[0] = stof(data.val);
                 if (data.key == "color-g") basecolor[1] = stof(data.val);
                 if (data.key == "color-b") basecolor[2] = stof(data.val);
+                if (data.key == "rounding") rounding = stof(data.val);
 
                 if (data.key == "random-force-range") rndforcerange = stof(data.val);
                 if (data.key == "random-zone-range") rndzonerange = stof(data.val);
@@ -394,16 +397,16 @@ namespace Interface {
 
     void StyleRescale() {        
         GUI::style->WindowPadding = Scale(ImVec2(3.0, 2.5));
-        GUI::style->WindowRounding = Scale(5.0);
+        GUI::style->WindowRounding = Scale(rounding);
         GUI::style->WindowBorderSize = Scale(1.0);
         GUI::style->WindowMinSize = Scale(ImVec2(32.0, 32.0));
         GUI::style->WindowTitleAlign = Scale(ImVec2(0.0, 0.5));
-        GUI::style->ChildRounding = Scale(5.0);
+        GUI::style->ChildRounding = Scale(rounding);
         GUI::style->ChildBorderSize = Scale(1.0);
-        GUI::style->PopupRounding = Scale(5.0);
+        GUI::style->PopupRounding = Scale(rounding);
         GUI::style->PopupBorderSize = Scale(1.0);
         GUI::style->FramePadding = Scale(ImVec2(2.0, 1.5));
-        GUI::style->FrameRounding = Scale(5.0);
+        GUI::style->FrameRounding = Scale(rounding);
         GUI::style->FrameBorderSize = Scale(0.0);
         GUI::style->ItemSpacing = Scale(ImVec2(5.0, 3.0));
         GUI::style->ItemInnerSpacing = Scale(ImVec2(3.0, 3.0));
@@ -412,11 +415,11 @@ namespace Interface {
         GUI::style->IndentSpacing = Scale(14.0);
         GUI::style->ColumnsMinSpacing = Scale(4.0);
         GUI::style->ScrollbarSize = Scale(10.0);
-        GUI::style->ScrollbarRounding = Scale(5.0);
+        GUI::style->ScrollbarRounding = Scale(rounding);
         GUI::style->GrabMinSize = Scale(12.0);
-        GUI::style->GrabRounding = Scale(5.0);
+        GUI::style->GrabRounding = Scale(rounding);
         GUI::style->LogSliderDeadzone = Scale(4.0);
-        GUI::style->TabRounding = Scale(5.0);
+        GUI::style->TabRounding = Scale(rounding);
         GUI::style->TabBorderSize = Scale(0.0);
         GUI::style->TabMinWidthForCloseButton = Scale(0.0);
         GUI::style->TabBarBorderSize = Scale(0.0);
@@ -835,11 +838,16 @@ namespace Interface {
             CollapsingHeader("Interface style") {
                 ImGui::ColorEdit3("Main color", basecolor);
 
+                ImGui::SetNextItemWidth(Scale(80.0));
+                ImGui::SliderFloat("Rounding", &rounding, 0.0, 10.0, "%.0f");
+
                 if (ImGui::Button("Reset", buttonDouble)) {
                     basecolor[0] = 0.26, basecolor[1] = 0.59, basecolor[2] = 0.98;
+                    rounding = 5.0;
                 }
 
                 UpdateColors();
+                StyleRescale();
 
                 CollapsingEnd;
             }
