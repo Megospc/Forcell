@@ -41,6 +41,8 @@ namespace Interface {
     bool windowsettings = false;
     bool windowbuildinfo = false;
 
+    float basecolor[3] = { 0.26, 0.59, 0.98 };
+
     Simulation::Simulation* simulation = nullptr;
     Render::Render* render = nullptr;
 
@@ -298,6 +300,10 @@ namespace Interface {
         str += KeyVal("interface", scalestr(interfacescale));
         str += KeyVal("pp-reducing", ppReducing);
 
+        str += KeyVal("color-r", basecolor[0], "%.2f");
+        str += KeyVal("color-g", basecolor[1], "%.2f");
+        str += KeyVal("color-b", basecolor[2], "%.2f");
+
         File::Data data;
 
         data.data = (char*)str.c_str();
@@ -325,6 +331,8 @@ namespace Interface {
         windowbuildinfo = false;
 
         creatorname = "";
+
+        basecolor[0] = 0.26, basecolor[1] = 0.59, basecolor[2] = 0.98;
 
         string str = data.data;
 
@@ -358,6 +366,10 @@ namespace Interface {
                 if (data.key == "interface") interfacescale = strscale(data.val);
 
                 if (data.key == "creator") creatorname = data.val;
+
+                if (data.key == "color-r") basecolor[0] = stof(data.val);
+                if (data.key == "color-g") basecolor[1] = stof(data.val);
+                if (data.key == "color-b") basecolor[2] = stof(data.val);
 
                 line = "";
             } else {
@@ -410,6 +422,10 @@ namespace Interface {
         GUI::style->CircleTessellationMaxError = 0.3/GetScale();
     }
 
+    void UpdateColors() {
+        GUI::Style(vec3(basecolor[0], basecolor[1], basecolor[2]));
+    }
+
     bool Init() {
         LoadConfig();
 
@@ -437,6 +453,8 @@ namespace Interface {
         for (uint i = 0; i < 4; i++) {
             fontMedium[i] = GUI::LoadTTF(FONT_PATH, Scale(16.0, i));
         }
+
+        UpdateColors();
 
         Input::Window(window);
         Input::Keyboard(keyboard);
@@ -754,6 +772,14 @@ namespace Interface {
 
             if (ImGui::Checkbox("Fullscreen mode", &fullscreen)) updateFullscreen();
             KeyHint("[F11]", 10.0);
+
+            ImGui::ColorEdit3("Interface color", basecolor);
+            if (ImGui::Button("Update style", buttonMedium)) UpdateColors();
+            ImGui::SameLine();
+            if (ImGui::Button("Reset", buttonMedium)) {
+                basecolor[0] = 0.26, basecolor[1] = 0.59, basecolor[2] = 0.98;
+                UpdateColors();
+            }
 
             ImGui::End();
         }
