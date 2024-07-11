@@ -81,11 +81,11 @@ namespace Simulation {
 
         bool connections = false;
 
-        float connectionNormal = 100.0;
-        float connectionDistance = 100.0;
+        float connectionNormal = 40.0;
+        float connectionDistance = 80.0;
         float connectionAttraction = 0.01;
         float connectionReplusion = 0.0;
-        float connectionMax = 200.0;
+        float connectionMax = 120.0;
 
         int connectionsPriority[100];
 
@@ -93,25 +93,25 @@ namespace Simulation {
             SCLAMP(types, 1, 10);
         }
 
-        void random(uint seed) {
+        void random(uint seed, float forcerange, float zonerange) {
             Rand::Seed(seed);
 
             for (uint i = 0; i < 10; i++) freqs[i] = Rand::Range(0.01, 1.00);
 
             for (uint i = 0; i < 100; i++) {
-                float f = Rand::Range(0.0, 2.0);
+                float f = Rand::Range(0.0, forcerange);
 
                 forces[i] = Rand::Sign()*f;
 
-                float r = Rand::Range(0.0, SQRT(1000.0));
+                float r = Rand::Range(0.0, SQRT(zonerange));
 
                 zones[i] = r*r;
 
-                float f2 = Rand::Range(0.0, 2.0);
+                float f2 = Rand::Range(0.0, forcerange);
 
                 forces2[i] = Rand::Sign()*f2-forces[i];
 
-                float r2 = Rand::Range(0.0, SQRT(1000.0));
+                float r2 = Rand::Range(0.0, SQRT(zonerange));
 
                 zones2[i] = r2*r2;
             }

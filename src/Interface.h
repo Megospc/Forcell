@@ -32,6 +32,7 @@ namespace Interface {
     bool postproc = false;
     bool rulemetawindow = false;
     bool rulesavewindow = false;
+    bool randomwindow = false;
 
     bool windowperformance = false;
     bool windowappearance = false;
@@ -67,6 +68,9 @@ namespace Interface {
     int ppReducing = 3.0;
 
     float speedup = 1.0;
+
+    float rndforcerange = 2.0;
+    float rndzonerange = 1000.0;
 
     float GetScale(int scale = interfacescale) {
         if (scale == 0) return 1.0;
@@ -235,11 +239,7 @@ namespace Interface {
 
             if (key == ImGuiKey_R) start();
 
-            if (key == ImGuiKey_N) {
-                rule.random(seed());
-
-                start();
-            }
+            if (key == ImGuiKey_N) randomwindow = true;
 
             if (key == ImGuiKey_F11) {
                 fullscreen = !fullscreen;
@@ -308,6 +308,9 @@ namespace Interface {
         str += KeyVal("color-g", basecolor[1], "%.2f");
         str += KeyVal("color-b", basecolor[2], "%.2f");
 
+        str += KeyVal("random-force-range", rndforcerange, "%.1f");
+        str += KeyVal("random-zone-range", rndzonerange, "%.0f");
+
         File::Data data;
 
         data.data = (char*)str.c_str();
@@ -374,6 +377,9 @@ namespace Interface {
                 if (data.key == "color-r") basecolor[0] = stof(data.val);
                 if (data.key == "color-g") basecolor[1] = stof(data.val);
                 if (data.key == "color-b") basecolor[2] = stof(data.val);
+
+                if (data.key == "random-force-range") rndforcerange = stof(data.val);
+                if (data.key == "random-zone-range") rndzonerange = stof(data.val);
 
                 line = "";
             } else {
@@ -469,7 +475,7 @@ namespace Interface {
         StyleRescale();
 
         rule.types = 6;
-        rule.random(seed());
+        rule.random(seed(), rndforcerange, rndzonerange);
 
         start();
 
@@ -704,6 +710,31 @@ namespace Interface {
             ImGui::End();
         }
 
+        if (randomwindow) {
+            ImGui::Begin("Random rule", &randomwindow);
+
+            ImGui::Text("Force range: ");
+            ImGui::SetNextItemWidth(Scale(120.0));
+            DragFloat("##forcerange", &rndforcerange, 0.01, 0.1, 5.0, "%.1f");
+            ImGui::Text("Interaction dist. range: ");
+            ImGui::SetNextItemWidth(Scale(120.0));
+            DragFloat("##zonerange", &rndzonerange, 10.0, 100.0, 10000.0, "%.0f");
+
+            SmallOffset("random-prebtn");
+
+            if (ImGui::Button("OK", buttonMedium)) {
+                rule.random(seed(), rndforcerange, rndzonerange);
+
+                start();
+
+                randomwindow = false;
+            }
+            ImGui::SameLine();
+            if (ImGui::Button("Cancel", buttonMedium)) randomwindow = false;
+
+            ImGui::End();
+        }
+
         ImGui::Begin("Forcell");
 
         if (ImGui::Button(pause ? "Continue":"Pause", buttonMedium)) pause = !pause;
@@ -801,12 +832,16 @@ namespace Interface {
             if (ImGui::Checkbox("Fullscreen mode", &fullscreen)) updateFullscreen();
             KeyHint("[F11]", 10.0);
 
-            ImGui::ColorEdit3("Interface color", basecolor);
-            if (ImGui::Button("Update style", buttonMedium)) UpdateColors();
-            ImGui::SameLine();
-            if (ImGui::Button("Reset", buttonMedium)) {
-                basecolor[0] = 0.26, basecolor[1] = 0.59, basecolor[2] = 0.98;
+            CollapsingHeader("Interface style") {
+                ImGui::ColorEdit3("Main color", basecolor);
+
+                if (ImGui::Button("Reset", buttonDouble)) {
+                    basecolor[0] = 0.26, basecolor[1] = 0.59, basecolor[2] = 0.98;
+                }
+
                 UpdateColors();
+
+                CollapsingEnd;
             }
 
             ImGui::End();
@@ -889,10 +924,7 @@ namespace Interface {
                 start();
             }
 
-            if (ImGui::Button("Randomize", buttonDouble)) {
-                rule.random(seed());
-                start();
-            }
+            if (ImGui::Button("Randomize", buttonDouble)) randomwindow = true;
             KeyHint("[N]");
 
             SmallOffset("rule-pre-params");
@@ -919,7 +951,7 @@ namespace Interface {
             }
 
             CollapsingHeader("Forces") {
-                RuleTable("forcetable", rule.forces, -2.0, 2.0, 0.001, "%.2f", true);
+                RuleTable("forcetable", rule.forces, -5.0, 5.0, 0.001, "%.2f", true);
 
                 CollapsingEnd;
 
@@ -938,7 +970,7 @@ namespace Interface {
 
             if (rule.secondtable) {
                 CollapsingHeader("Forces 2") {
-                    RuleTable("forcetable2", rule.forces2, -4.0, 4.0, 0.001, "%.2f", true);
+                    RuleTable("forcetable2", rule.forces2, -10.0, 10.0, 0.001, "%.2f", true);
 
                     CollapsingEnd;
 
