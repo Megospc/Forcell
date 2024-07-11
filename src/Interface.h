@@ -122,6 +122,8 @@ namespace Interface {
         return (getsimpos(mousepos)+1.0-camera)/2.0*simsize();
     }
 
+    vec2 prevmousesim(0.0, 0.0);
+
     void updatemouse() {
         mousepos = (Input::GetMouse()/scrsize()*2.0-1.0)*vec2(1.0, -1.0);
     }
@@ -250,6 +252,7 @@ namespace Interface {
             if (key == ImGuiKey_1) mousetool = 1;
             if (key == ImGuiKey_2) mousetool = 2;
             if (key == ImGuiKey_3) mousetool = 3;
+            if (key == ImGuiKey_4) mousetool = 4;
         }
 
         if (action == GLFW_RELEASE) {
@@ -384,7 +387,7 @@ namespace Interface {
     }
 
     void StyleRescale() {        
-        GUI::style->WindowPadding = Scale(ImVec2(3.0, 1.5));
+        GUI::style->WindowPadding = Scale(ImVec2(3.0, 2.5));
         GUI::style->WindowRounding = Scale(5.0);
         GUI::style->WindowBorderSize = Scale(1.0);
         GUI::style->WindowMinSize = Scale(ImVec2(32.0, 32.0));
@@ -598,19 +601,31 @@ namespace Interface {
         static float shoveradius = 100.0;
         static float slowdownfriction = 0.1;
         static float slowdownradius = 100.0;
+        static float moveitradius = 100.0;
+        static float moveitforce = 0.1;
+        static float moveitfriction = 0.0;
+
+        vec2 mpos = mousesim();
 
         if (!pause) for (uint i = 0; i < stepsperframe; i++) {
             if (mousedown) {
-            vec2 pos = mousesim();
+                if (mousetool == 2) simulation->shove(mpos.x, mpos.y, shoveradius, shoveforce);
+                if (mousetool == 3) simulation->slowdown(mpos.x, mpos.y, slowdownradius, slowdownfriction);
+                if (mousetool == 4) {
+                    float fx = mpos.x-prevmousesim.x;
+                    float fy = mpos.y-prevmousesim.y;
+                    float f = CLAMPMIN(fx*fx+fy*fy, 1.0);
 
-            if (mousetool == 2) simulation->shove(pos.x, pos.y, shoveradius, shoveforce);
-            if (mousetool == 3) simulation->slowdown(pos.x, pos.y, slowdownradius, slowdownfriction);
+                    simulation->moveit(fx, fy, mpos.x, mpos.y, moveitradius, moveitforce, moveitfriction/f);
+                }
             }
 
             simulation->step(threadcount, speedup);
 
             stepcount++;
         }
+
+        prevmousesim = mpos;
 
         static float colorTone[3] = { 1.0, 1.0, 1.0 };
 
@@ -829,19 +844,30 @@ namespace Interface {
             KeyHint("[2]");
             ImGui::RadioButton("Slow down", &mousetool, 3);
             KeyHint("[3]");
+            ImGui::RadioButton("Move it", &mousetool, 4);
+            KeyHint("[4]");
 
             if (mousetool == 2) {
                 ImGui::SetNextItemWidth(Scale(60.0));
-                DragFloat("Radius", &shoveradius, 0.1, 0.0, 10000.0, "%.0f");
+                DragFloat("Radius", &shoveradius, 0.2, 0.0, 10000.0, "%.0f");
                 ImGui::SetNextItemWidth(Scale(60.0));
                 DragFloat("Force", &shoveforce, 0.1, 0.0, 1000.0, "%.1f");
             }
 
             if (mousetool == 3) {
                 ImGui::SetNextItemWidth(Scale(60.0));
-                DragFloat("Radius", &slowdownradius, 0.1, 0.0, 10000.0, "%.0f");
+                DragFloat("Radius", &slowdownradius, 0.2, 0.0, 10000.0, "%.0f");
                 ImGui::SetNextItemWidth(Scale(60.0));
                 DragFloat("Friction", &slowdownfriction, 0.001, 0.0, 1.0, "%.3f");
+            }
+
+            if (mousetool == 4) {
+                ImGui::SetNextItemWidth(Scale(60.0));
+                DragFloat("Radius", &moveitradius, 0.2, 0.0, 10000.0, "%.0f");
+                ImGui::SetNextItemWidth(Scale(60.0));
+                DragFloat("Force", &moveitforce, 0.0002, 0.0, 1.0, "%.3f");
+                ImGui::SetNextItemWidth(Scale(60.0));
+                DragFloat("Friction", &moveitfriction, 0.0002, 0.0, 1.0, "%.3f");
             }
 
             ImGui::End();
@@ -931,7 +957,7 @@ namespace Interface {
             CollapsingHeader("Frequencies") {
                 for (uint i = 0; i < rule.types; i++) {
                     ImGui::SetNextItemWidth(Scale(100.0));
-                    DragFloat(("##freqs"+std::to_string(i)).c_str(), &rule.freqs[i], 0.002, 0.0, 10.0, "%.2f");
+                    DragFloat(("##freqs"+std::to_string(i)).c_str(), &rule.freqs[i], 0.002, 0.0, 1000000.0, "%.2f");
                     ImGui::SameLine();
                     ColorLabel("##freqsclr"+std::to_string(i), GetTypeColor(i), ImVec2(Scale(60.0), Scale(18.0)));
                 }

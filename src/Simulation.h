@@ -251,6 +251,29 @@ namespace Simulation {
                 }
             }
 
+            void moveit(float fx, float fy, float x, float y, float r, float force, float friction) {
+                float r2 = r*r;
+
+                fx *= force, fy *= force;
+
+                for (uint i = 0; i < particlesCount; i++) {
+                    Particle* a = &particles[i];
+
+                    float dx = x-a->x;
+                    float dy = y-a->y;
+
+                    float d2 = dx*dx+dy*dy;
+
+                    if (d2 > r2) continue;
+
+                    a->vx *= 1.0-friction;
+                    a->vy *= 1.0-friction;
+
+                    a->vx += fx;
+                    a->vy += fy;
+                }
+            }
+
             void task1forcell(uint, uint);
             void task2forcell(uint, uint);
             void task1const(uint, uint);
