@@ -66,13 +66,20 @@ namespace Interface {
 
     float speedup = 1.0;
 
-    float Scale(float size, int scale = interfacescale) {
-        if (scale == 0) return size;
-        if (scale == 1) return size*1.5;
-        if (scale == 2) return size*2;
-        if (scale == 3) return size*4;
+    float GetScale(int scale = interfacescale) {
+        if (scale == 0) return 1.0;
+        if (scale == 1) return 1.5;
+        if (scale == 2) return 2.0;
+        if (scale == 3) return 4.0;
+        return 1.0;
+    }
 
-        return size;
+    float Scale(float size, int scale = interfacescale) {
+        return size*GetScale(scale);
+    }
+
+    ImVec2 Scale(ImVec2 size, int scale = interfacescale) {
+        return ImVec2(Scale(size.x), Scale(size.y));
     }
 
     float particleopacity = 1.0;
@@ -359,10 +366,48 @@ namespace Interface {
         }
     }
 
-    void StyleRescale() {
-        GUI::style->FrameRounding = Scale(5.0);
-        GUI::style->GrabRounding = Scale(5.0);
+    void LogVec2(ImVec2 v) {
+        Log(v.x << " " << v.y);
+    }
+
+    void StyleRescale() {        
+        GUI::style->WindowPadding = Scale(ImVec2(3.0, 1.5));
         GUI::style->WindowRounding = Scale(5.0);
+        GUI::style->WindowBorderSize = Scale(1.0);
+        GUI::style->WindowMinSize = Scale(ImVec2(32.0, 32.0));
+        GUI::style->WindowTitleAlign = Scale(ImVec2(0.0, 0.5));
+        GUI::style->ChildRounding = Scale(5.0);
+        GUI::style->ChildBorderSize = Scale(1.0);
+        GUI::style->PopupRounding = Scale(5.0);
+        GUI::style->PopupBorderSize = Scale(1.0);
+        GUI::style->FramePadding = Scale(ImVec2(2.0, 1.5));
+        GUI::style->FrameRounding = Scale(5.0);
+        GUI::style->FrameBorderSize = Scale(0.0);
+        GUI::style->ItemSpacing = Scale(ImVec2(5.0, 3.0));
+        GUI::style->ItemInnerSpacing = Scale(ImVec2(3.0, 3.0));
+        GUI::style->CellPadding = Scale(ImVec2(3.0, 1.5));
+        GUI::style->TouchExtraPadding = Scale(ImVec2(0.0, 0.0));
+        GUI::style->IndentSpacing = Scale(14.0);
+        GUI::style->ColumnsMinSpacing = Scale(4.0);
+        GUI::style->ScrollbarSize = Scale(10.0);
+        GUI::style->ScrollbarRounding = Scale(5.0);
+        GUI::style->GrabMinSize = Scale(12.0);
+        GUI::style->GrabRounding = Scale(5.0);
+        GUI::style->LogSliderDeadzone = Scale(4.0);
+        GUI::style->TabRounding = Scale(5.0);
+        GUI::style->TabBorderSize = Scale(0.0);
+        GUI::style->TabMinWidthForCloseButton = Scale(0.0);
+        GUI::style->TabBarBorderSize = Scale(0.0);
+        GUI::style->TableAngledHeadersAngle = 30.0;
+        GUI::style->ButtonTextAlign = ImVec2(0.5, 0.3);
+        GUI::style->SelectableTextAlign = ImVec2(0.0, 0.0);
+        GUI::style->SeparatorTextBorderSize = Scale(2.0);
+        GUI::style->SeparatorTextPadding = Scale(ImVec2(14.0, 2.0));
+        GUI::style->DisplayWindowPadding = Scale(ImVec2(12.0, 12.0));
+        GUI::style->DisplaySafeAreaPadding = Scale(ImVec2(2.0, 2.0));
+        GUI::style->MouseCursorScale = 1.0;
+        GUI::style->CurveTessellationTol = 1.25/GetScale();
+        GUI::style->CircleTessellationMaxError = 0.3/GetScale();
     }
 
     bool Init() {
