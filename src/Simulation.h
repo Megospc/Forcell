@@ -458,12 +458,14 @@ namespace Simulation {
         } \
     }
 
-    #define TASKFN_FORCELL(name, code) SIMULATION_TASKFN(name, \
+    #define TASKFN_FORCELL(name, code, extensions) SIMULATION_TASKFN(name, \
         TASKFN_LOOPS( \
             TASKFN_DISTANCE \
             TASKFN_RADIUSES \
             \
             float f = 0.0; \
+            \
+            extensions \
             \
             if (TASKFN_COLLITEST) { \
                 TASKFN_MINDIST \
@@ -478,11 +480,13 @@ namespace Simulation {
         ) \
     )
 
-    #define TASKFN_CONSTANT(name, code) SIMULATION_TASKFN(name, \
+    #define TASKFN_CONSTANT(name, code, extensions) SIMULATION_TASKFN(name, \
         TASKFN_LOOPS( \
             TASKFN_DISTANCE \
             \
             float f = 0.0; \
+            \
+            extensions \
             \
             TASKFN_RULEIDX \
             \
@@ -494,12 +498,14 @@ namespace Simulation {
         ) \
     )
 
-    #define TASKFN_CLASSIC(name, code) SIMULATION_TASKFN(name, \
+    #define TASKFN_CLASSIC(name, code, extensions) SIMULATION_TASKFN(name, \
         TASKFN_LOOPS( \
             TASKFN_DISTANCE \
             TASKFN_RADIUSES \
             \
             float f = 0.0; \
+            \
+            extensions \
             \
             if ((d2 < rr2) || d2 < 0.0001) { \
                 TASKFN_MINDIST \
@@ -518,12 +524,12 @@ namespace Simulation {
         ) \
     )
 
-    #define TASK1_FORCELL(name, extensions) TASKFN_FORCELL(task1forcell##name, TASKFN_FORCE extensions)
-    #define TASK2_FORCELL(name, extensions) TASKFN_FORCELL(task2forcell##name, TASKFN_FORCEADD(zones, forces) TASKFN_FORCEADD(zones2, forces2) extensions)
-    #define TASK1_CONST(name, extensions) TASKFN_CONSTANT(task1const##name, TASKFN_CONST_FORCE extensions)
-    #define TASK2_CONST(name, extensions) TASKFN_CONSTANT(task2const##name, TASKFN_CONST_FORCEADD(zones, forces) TASKFN_CONST_FORCEADD(zones2, forces2) extensions)
-    #define TASK1_CLASSIC(name, extensions) TASKFN_CLASSIC(task1classic##name, TASKFN_CLASSIC_FORCE extensions)
-    #define TASK2_CLASSIC(name, extensions) TASKFN_CLASSIC(task2classic##name, TASKFN_CLASSIC_FORCEADD(zones, forces) TASKFN_CLASSIC_FORCEADD(zones2, forces2) extensions)
+    #define TASK1_FORCELL(name, extensions) TASKFN_FORCELL(task1forcell##name, TASKFN_FORCE, extensions)
+    #define TASK2_FORCELL(name, extensions) TASKFN_FORCELL(task2forcell##name, TASKFN_FORCEADD(zones, forces) TASKFN_FORCEADD(zones2, forces2), extensions)
+    #define TASK1_CONST(name, extensions) TASKFN_CONSTANT(task1const##name, TASKFN_CONST_FORCE, extensions)
+    #define TASK2_CONST(name, extensions) TASKFN_CONSTANT(task2const##name, TASKFN_CONST_FORCEADD(zones, forces) TASKFN_CONST_FORCEADD(zones2, forces2), extensions)
+    #define TASK1_CLASSIC(name, extensions) TASKFN_CLASSIC(task1classic##name, TASKFN_CLASSIC_FORCE, extensions)
+    #define TASK2_CLASSIC(name, extensions) TASKFN_CLASSIC(task2classic##name, TASKFN_CLASSIC_FORCEADD(zones, forces) TASKFN_CLASSIC_FORCEADD(zones2, forces2), extensions)
 
     #define TASKFN_EXTENSER(name, extensions) \
         TASK1_FORCELL(name, extensions); \
