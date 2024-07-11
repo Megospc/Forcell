@@ -233,6 +233,24 @@ namespace Simulation {
                 }
             }
 
+            void slowdown(float x, float y, float r, float friction) {
+                float r2 = r*r;
+
+                for (uint i = 0; i < particlesCount; i++) {
+                    Particle* a = &particles[i];
+
+                    float dx = x-a->x;
+                    float dy = y-a->y;
+
+                    float d2 = dx*dx+dy*dy;
+
+                    if (d2 > r2) continue;
+
+                    a->vx *= 1.0-friction;
+                    a->vy *= 1.0-friction;
+                }
+            }
+
             void task1forcell(uint, uint);
             void task2forcell(uint, uint);
             void task1const(uint, uint);

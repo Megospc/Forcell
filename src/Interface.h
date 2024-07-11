@@ -249,6 +249,7 @@ namespace Interface {
 
             if (key == ImGuiKey_1) mousetool = 1;
             if (key == ImGuiKey_2) mousetool = 2;
+            if (key == ImGuiKey_3) mousetool = 3;
         }
 
         if (action == GLFW_RELEASE) {
@@ -586,12 +587,15 @@ namespace Interface {
 
         static float shoveforce = 100.0;
         static float shoveradius = 100.0;
+        static float slowdownfriction = 0.1;
+        static float slowdownradius = 100.0;
 
         if (!pause) for (uint i = 0; i < stepsperframe; i++) {
-            if (mousetool == 2 && mousedown) {
-                vec2 pos = mousesim();
+            if (mousedown) {
+            vec2 pos = mousesim();
 
-                simulation->shove(pos.x, pos.y, shoveradius, shoveforce);
+            if (mousetool == 2) simulation->shove(pos.x, pos.y, shoveradius, shoveforce);
+            if (mousetool == 3) simulation->slowdown(pos.x, pos.y, slowdownradius, slowdownfriction);
             }
 
             simulation->step(threadcount, speedup);
@@ -814,12 +818,21 @@ namespace Interface {
             KeyHint("[1]");
             ImGui::RadioButton("Shove out", &mousetool, 2);
             KeyHint("[2]");
+            ImGui::RadioButton("Slow down", &mousetool, 3);
+            KeyHint("[3]");
 
             if (mousetool == 2) {
                 ImGui::SetNextItemWidth(Scale(60.0));
                 DragFloat("Radius", &shoveradius, 0.1, 0.0, 10000.0, "%.0f");
                 ImGui::SetNextItemWidth(Scale(60.0));
                 DragFloat("Force", &shoveforce, 0.1, 0.0, 1000.0, "%.1f");
+            }
+
+            if (mousetool == 3) {
+                ImGui::SetNextItemWidth(Scale(60.0));
+                DragFloat("Radius", &slowdownradius, 0.1, 0.0, 10000.0, "%.0f");
+                ImGui::SetNextItemWidth(Scale(60.0));
+                DragFloat("Friction", &slowdownfriction, 0.001, 0.0, 1.0, "%.3f");
             }
 
             ImGui::End();
