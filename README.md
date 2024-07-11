@@ -18,6 +18,7 @@ Forcell is a particle life simulation with new features and Multi-threaded compu
 Version: 1.5.0 (06.07.2024)
 
 ## ✨ Features
++ Particles connections
 + Multi-threaded computing on CPU
 + Supporting Ubuntu and Windows
 + Fullscreen mode

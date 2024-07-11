@@ -435,8 +435,8 @@ namespace Interface {
         );
     }
 
-    void SmallOffset(string id) {
-        ImGui::InvisibleButton(("smalloffset"+id).c_str(), ImVec2(10.0, Scale(8.0)));
+    void SmallOffset(string id, float size = 8.0) {
+        ImGui::InvisibleButton(("smalloffset"+id).c_str(), ImVec2(10.0, Scale(size)));
     }
 
     void DragFloat(cstr label, float* v, float speed, float min, float max, cstr fmt = "%.2f") {
@@ -851,8 +851,6 @@ namespace Interface {
             }
 
             CollapsingHeader("Connections") {
-                WarnText("Beta Feature: The following data will not be saved in the rule file!");
-
                 ImGui::Checkbox("Connections", &rule.connections);
 
                 ImGui::SetNextItemWidth(Scale(60.0));
@@ -865,6 +863,8 @@ namespace Interface {
                 DragFloat("Normal length", &rule.connectionNormal, 0.1, 0.0, 10000.0, "%.0f");
                 ImGui::SetNextItemWidth(Scale(60.0));
                 DragFloat("Max length", &rule.connectionMax, 0.1, 0.0, 10000.0, "%.0f");
+
+                ImGui::Text("<- More  (priority)  Less ->");
 
                 if (ImGui::BeginTable(
                     "connectiontable",
@@ -912,10 +912,10 @@ namespace Interface {
                                     ImGui::PushStyleColor(ImGuiCol_FrameBgHovered, clrHover);
                                     
                                     ImGui::SetNextItemWidth(Scale(15.0));
-                                    DragInt((string("##connections")+std::to_string(i)+"-"+std::to_string(j)+"-"+std::to_string(k)).c_str(), ptr, 0.02, -2, rule.types, *ptr == -1 || *ptr == rule.types ? "-":"%d");
+                                    DragInt((string("##connections")+std::to_string(i)+"-"+std::to_string(j)+"-"+std::to_string(k)).c_str(), ptr, 0.02, -2, 10, *ptr == -1 || *ptr == rule.types ? "-":"%d");
                                     ImGui::SameLine();
 
-                                    if (*ptr == rule.types) *ptr = -1;
+                                    if (*ptr >= rule.types) *ptr = -1;
                                     if (*ptr == -2) *ptr = rule.types-1;
 
                                     ImGui::PopStyleColor(3);
@@ -939,6 +939,8 @@ namespace Interface {
 
                     ImGui::EndTable();
                 }
+
+                SmallOffset("after-connections-table", 2.0);
 
                 if (ImGui::Button("Clear", buttonDouble)) {
                     for (uint i = 0; i < 100; i++) rule.connectionsPriority[i] = -1;
