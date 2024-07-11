@@ -520,6 +520,8 @@ namespace Interface {
     }
 
     void RuleTable(cstr id, float* ptr, float min, float max, float speed, cstr fmt, bool forces = false) {
+        ImVec2 buttonDouble = Scale(ImVec2(165.0, 18.0));
+
         if (ImGui::BeginTable(
             id,
             rule.types+2,
@@ -568,6 +570,13 @@ namespace Interface {
 
             ImGui::EndTable();
         }
+
+        SmallOffset("after-table"+string(id), 2.0);
+
+        if (ImGui::Button("Clear", buttonDouble)) {
+            for (uint i = 0; i < 100; i++) ptr[i] = 0.0;
+        }
+
     }
 
     void KeyHint(string key, float offset = 0.0) {
@@ -580,10 +589,10 @@ namespace Interface {
     }
     
     void frame() {
-        ImVec2 buttonTiny = ImVec2(Scale(18.0), Scale(18.0));
-        ImVec2 buttonShort = ImVec2(Scale(40.0), Scale(18.0));
-        ImVec2 buttonMedium = ImVec2(Scale(80.0), Scale(18.0));
-        ImVec2 buttonDouble = ImVec2(Scale(160.0)+GUI::style->ItemSpacing.x, Scale(18.0));
+        ImVec2 buttonTiny = Scale(ImVec2(18.0, 18.0));
+        ImVec2 buttonShort = Scale(ImVec2(40.0, 18.0));
+        ImVec2 buttonMedium = Scale(ImVec2(80.0, 18.0));
+        ImVec2 buttonDouble = Scale(ImVec2(165.0, 18.0));
 
         static float shoveforce = 100.0;
         static float shoveradius = 100.0;
@@ -927,7 +936,7 @@ namespace Interface {
                     ColorLabel("##freqsclr"+std::to_string(i), GetTypeColor(i), ImVec2(Scale(60.0), Scale(18.0)));
                 }
 
-                if (ImGui::Button("Reset", buttonMedium)) {
+                if (ImGui::Button("Reset", buttonDouble)) {
                     for (uint i = 0; i < rule.types; i++) rule.freqs[i] = 1.0;
                 }
 
@@ -996,7 +1005,7 @@ namespace Interface {
                                     ImGui::PushStyleColor(ImGuiCol_FrameBgHovered, clrHover);
                                     
                                     ImGui::SetNextItemWidth(Scale(15.0));
-                                    DragInt((string("##connections")+std::to_string(i)+"-"+std::to_string(j)+"-"+std::to_string(k)).c_str(), ptr, 0.02, -2, 10, *ptr == -1 || *ptr == rule.types ? "-":"%d");
+                                    DragInt((string("##connections")+std::to_string(i)+"-"+std::to_string(j)+"-"+std::to_string(k)).c_str(), ptr, 0.05, -2, 10, *ptr == -1 || *ptr == rule.types ? "-":"%d");
                                     ImGui::SameLine();
 
                                     if (*ptr >= rule.types) *ptr = -1;
