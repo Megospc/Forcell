@@ -15,7 +15,7 @@ Forcell is a particle life simulation with new features and Multi-threaded compu
 
 [Online demo on GitHub Pages](https://megospc.github.io/ForcellDemo)
 
-Version: 1.5.0 (06.07.2024)
+Version: 1.8.0 (11.07.2024)
 
 ## ✨ Features
 + Particles connections
