@@ -8,6 +8,7 @@
 #define CAMERA_STEP 0.1
 
 #include "GUI.h"
+#include "GL.h"
 #include "Input.h"
 #include "Simulation.h"
 #include "Render.h"
@@ -33,6 +34,7 @@ namespace Interface {
     bool rulemetawindow = false;
     bool rulesavewindow = false;
     bool randomwindow = false;
+    bool starred = false;
 
     bool windowperformance = false;
     bool windowappearance = false;
@@ -61,6 +63,8 @@ namespace Interface {
     uint windowwidth = 1600;
     uint windowheight = 900;
     int mousetool = 1;
+    uint starframe = 0;
+    time_t laststar = 0;
 
     vec2 camera;
     float zoomsteps;
@@ -300,6 +304,9 @@ namespace Interface {
         if (glowing) str += KeyVal("glowing", "");
         if (postproc) str += KeyVal("postprocessing", "");
         if (zoomtocursor) str += KeyVal("zoom-to-mouse", "");
+        if (starred) str += KeyVal("starred", "");
+
+        str += KeyVal("last-star", std::to_string(laststar));
         
         if (windowperformance) str += KeyVal("window-performance", "");
         if (windowappearance) str += KeyVal("window-appearance", "");
@@ -354,6 +361,9 @@ namespace Interface {
         windowsettings = false;
         windowbuildinfo = false;
         zoomtocursor = false;
+        starred = false;
+
+        laststar = 0;
 
         creatorname = "";
 
@@ -370,9 +380,12 @@ namespace Interface {
                 KeyVal data(line);
                 
                 if (data.key == "fullscreen") fullscreen = true;
-                if (data.key == "glowing") {glowing = true;Log(8888);}
+                if (data.key == "glowing") glowing = true;
                 if (data.key == "postprocessing") postproc = true;
                 if (data.key == "zoom-to-mouse") zoomtocursor = true;
+                if (data.key == "starred") starred = true;
+
+                if (data.key == "last-star") laststar = stol(data.val);
 
                 if (data.key == "window-performance") windowperformance = true;
                 if (data.key == "window-appearance") windowappearance = true;
@@ -456,6 +469,9 @@ namespace Interface {
         GUI::Style(vec3(basecolor[0], basecolor[1], basecolor[2]));
     }
 
+    GL::Texture2D* emojiStar;
+    GL::Texture2D* emojiHeart;
+
     bool Init() {
         LoadConfig();
 
@@ -491,6 +507,9 @@ namespace Interface {
         Input::MouseMove(mousemove);
         Input::MouseButton(mousebtn);
         Input::MouseWheel(mousewheel);
+
+        emojiStar = Img::Texture("assets/star.png");
+        emojiHeart = Img::Texture("assets/heart.png");
 
         StyleRescale();
 
@@ -773,10 +792,38 @@ namespace Interface {
         ImGui::Checkbox("Rule", &windowrule);
         ImGui::Checkbox("Settings", &windowsettings);
         ImGui::Checkbox("Build info", &windowbuildinfo);
-        
-        SmallOffset("pre-copyright");
 
-        ImGui::Text("Copyright (c) 2024 Megospc");
+        SmallOffset("pre-star");
+        
+        if (starred) {
+            ImGui::Image((void*)(intptr_t)emojiHeart->getID(), Scale(ImVec2(18.0, 18.0)));
+
+            ImGui::SameLine(Scale(25.0));
+
+            ImGui::TextColored(ImVec4(1.0, 0.5, 0.7, 1.0), "Big thanks!");
+        } else if (time(NULL)-laststar > 86400) {
+            float size = sin((float)starframe/30.0)*0.05+0.2;
+
+            ImGui::Image((void*)(intptr_t)emojiStar->getID(), Scale(ImVec2(18.0, 18.0)), ImVec2(size, size), ImVec2(1.0-size, 1.0-size));
+
+            ImGui::SameLine(Scale(25.0));
+
+            ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.0, 0.0, 0.0, 0.0));
+            ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.0, 0.0, 0.0, 0.0));
+            ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.0, 0.0, 0.0, 0.0));
+            ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0, 0.8, 0.2, 1.0));
+            if (ImGui::Button("Star me on GitHub")) {
+                Browser("https://github.com/Megospc/Forcell/");
+                starred = true;
+            }
+            ImGui::PopStyleColor();
+            ImGui::SameLine();
+            ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0, 1.0, 1.0, 0.3));
+            if (ImGui::Button("X")) laststar = time(NULL);
+            ImGui::PopStyleColor();
+            ImGui::PopStyleColor(3);
+            starframe++;
+        }
         
         ImGui::End();
 
@@ -1164,6 +1211,8 @@ namespace Interface {
             ImGui::BulletText("Optimizations disabled (debug build)");
             #endif
 
+            ImGui::Text("Copyright (c) 2024 Megospc");
+
             ImGui::End();
         }
 
@@ -1195,6 +1244,8 @@ namespace Interface {
         cleanup();
 
         GUI::Destroy();
+
+        delete emojiStar;
 
         delete window;
     }

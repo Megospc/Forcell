@@ -90,6 +90,10 @@ namespace GUI {
         SetColor(ImGuiCol_ModalWindowDimBg,       vec4(0.80, 0.80, 0.80, 0.35));
     }
 
+    ImWchar fontranges[] = {
+        0x0020, 0x0080
+    };
+
     bool Init(GL::Window* glwindow) {
         IMGUI_CHECKVERSION();
 
@@ -155,7 +159,7 @@ namespace GUI {
     }
 
     ImFont* LoadTTF(cstr path, uint size) {
-        return io->Fonts->AddFontFromFileTTF(path, size);
+        return io->Fonts->AddFontFromFileTTF(path, size, NULL, fontranges);
     }
 
     void INI(cstr path) {

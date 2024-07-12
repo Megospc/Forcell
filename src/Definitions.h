@@ -94,6 +94,20 @@ vec2 rotate90(vec2 v) {
     return vec2(v.y, -v.x);
 }
 
+void Browser(string url) {
+    string str = "";
+
+    #if (defined(__WIN32) || defined(__WIN64))
+    str += "start ";
+    #elif __linux__
+    str += "open ";
+    #endif
+
+    str += url;
+
+    std::system(str.c_str());
+}
+
 struct KeyVal {
     string key;
     string val;
