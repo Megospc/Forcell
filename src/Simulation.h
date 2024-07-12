@@ -81,11 +81,11 @@ namespace Simulation {
 
         bool connections = false;
 
-        float connectionNormal = 40.0;
-        float connectionDistance = 80.0;
+        float connectionNormal = 30.0;
+        float connectionDistance = 50.0;
         float connectionAttraction = 0.01;
         float connectionReplusion = 0.0;
-        float connectionMax = 120.0;
+        float connectionMax = 100.0;
 
         int connectionsPriority[100];
 
@@ -121,8 +121,16 @@ namespace Simulation {
             bounceForce = Rand::Range(0.1, 0.4);
 
             for (uint i = 0; i < 100; i++) {
-                connectionsPriority[i] = Rand::Chance(0.5) ? Rand::Int(10):-1;
+                uint slot = (i/2)%5;
+
+                connectionsPriority[i] = Rand::Chance(0.75-(float)slot/5.0*0.6) ? Rand::Int(types):-1;
             }
+
+            connectionNormal = Rand::Range(30.0, 100.0);
+            connectionDistance = connectionNormal+Rand::Range(30.0, 100.0);
+            connectionMax = connectionDistance+Rand::Range(30.0, 100.0);
+            connectionAttraction = 0.01;
+            connectionReplusion = 0.0;
         }
 
         // Metadata

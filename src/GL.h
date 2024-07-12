@@ -8,6 +8,8 @@
 #include "Logger.h"
 #include "Definitions.h"
 
+#define MAX_SHADERS_PER_PROGRAM 3
+
 #ifdef NDEBUG
 #define GL_DEBUG_MARKER(name) 
 #else
@@ -150,6 +152,7 @@ namespace GL {
             void create(cstr title, uint width, uint height, GLFWmonitor* monitor, GLFWwindow* share) {
                 glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
                 glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+
                 glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
                 
                 glwindow = glfwCreateWindow(width, height, title, monitor, share);
@@ -243,50 +246,18 @@ namespace GL {
     class Program {
         public:
             Program(cstr vertexSource, cstr fragmentSource, string name = "unnamed") {
-                Shader* vertex = new Shader(vertexSource, GL_VERTEX_SHADER, name+"-vertex");
-                Shader* fragment = new Shader(fragmentSource, GL_FRAGMENT_SHADER, name+"-fragment");
+                string names[2] = { "vertex", "fragment" };
+                int types[2] = { GL_VERTEX_SHADER, GL_FRAGMENT_SHADER };
+                cstr sources[2];
 
-                id = glCreateProgram();
+                sources[0] = vertexSource;
+                sources[1] = fragmentSource;
 
-                GL_DEBUG_MARKER("program "+name+" created");
-                
-                if (!vertex->getID() || !fragment->isOk()) {
-                    ok = false;
-                    
-                    return;
-                }
-                
-                glAttachShader(id, vertex->getID());
-                glAttachShader(id, fragment->getID());
+                init(2, sources, types, name, names);
+            }
 
-                GL_DEBUG_MARKER("program "+name+" attached");
-
-                glLinkProgram(id);
-
-                GL_DEBUG_MARKER("program "+name+" linked");
-                
-                int success;
-                char log[512];
-                
-                glGetProgramiv(id, GL_LINK_STATUS, &success);
-                
-                if (success) ok = true;
-                else {
-                    glGetProgramInfoLog(id, 512, NULL, log);
-
-                    Error("Program " << name << " error:");
-                    
-                    Error(log);
-
-                    glDeleteProgram(id);
-                    
-                    ok = false;
-                }
-
-                GL_DEBUG_MARKER("program "+name+" checked");
-
-                delete vertex;
-                delete fragment;
+            Program(uint count, cstr* sources, int* types, string name = "unnamed", string* names = NULL) {
+                init(count, sources, types, name, names);
             }
 
             ~Program() {
@@ -317,6 +288,61 @@ namespace GL {
             bool ok;
             
             uint id;
+        
+        protected:
+            void init(uint count, cstr* sources, int* types, string name = "unnamed", string* names = NULL) {
+                if (count > MAX_SHADERS_PER_PROGRAM) {
+                    Error("Too many shaders");
+
+                    return;
+                }
+
+                Shader* shaders[MAX_SHADERS_PER_PROGRAM];
+
+                // Creating shaders
+                for (uint i = 0; i < count; i++) {
+                    shaders[i] = new Shader(sources[i], types[i], name+(names == NULL ? std::to_string(i):names[i]));
+
+                    if (!shaders[i]->isOk()) {
+                        ok = false;
+                        return;
+                    }
+                }
+
+                id = glCreateProgram();
+
+                GL_DEBUG_MARKER("program "+name+" created");
+                
+                for (uint i = 0; i < count; i++) glAttachShader(id, shaders[i]->getID());
+
+                GL_DEBUG_MARKER("program "+name+" attached");
+
+                glLinkProgram(id);
+
+                GL_DEBUG_MARKER("program "+name+" linked");
+                
+                int success;
+                char log[512];
+                
+                glGetProgramiv(id, GL_LINK_STATUS, &success);
+                
+                if (success) ok = true;
+                else {
+                    glGetProgramInfoLog(id, 512, NULL, log);
+
+                    Error("Program " << name << " error:");
+                    
+                    Error(log);
+
+                    glDeleteProgram(id);
+                    
+                    ok = false;
+                }
+
+                GL_DEBUG_MARKER("program "+name+" checked");
+
+                for (uint i = 0; i < count; i++) delete shaders[i];
+            }
     };
 
     class VertexArray {
