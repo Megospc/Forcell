@@ -1046,7 +1046,6 @@ namespace Interface {
                 ImGuiFileDialog::Instance()->OpenDialog("OpenFile", "Choose File", ".txt", config);
 
                 rulemetawindow = true;
-                start();
             }
 
             if (ImGui::Button("Randomize", buttonDouble)) randomwindow = true;
@@ -1207,8 +1206,6 @@ namespace Interface {
             }
 
             CollapsingHeader("Reactions") {
-                WarnText("Beta Feature: The following data will not be saved in the rule file!");
-
                 ImGui::Checkbox("Reactions", &rule.reactions);
 
                 ImGui::SetNextItemWidth(Scale(60.0));

@@ -19,6 +19,7 @@ Version: 1.8.0 (11.07.2024)
 
 ## ✨ Features
 + Particles connections
++ Chemical reactions
 + Multi-threaded computing on CPU
 + Supporting Ubuntu and Windows
 + Fullscreen mode

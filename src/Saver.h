@@ -93,7 +93,15 @@ namespace Saver {
             str += KeyVal("connection-normal", rule->connectionNormal, "%.0f");
             str += KeyVal("connection-max", rule->connectionMax, "%.0f");
 
-            TABLE_ENCODER("connections", 10, EncodeConnections(&rule->connectionsPriority[10*i], size));
+            TABLE_ENCODER("connections", 10, EncodeConnections(&rule->connectionsPriority[10*i], 10));
+        }
+
+        if (rule->reactions) {
+            str += KeyVal("reactions", "");
+            str += KeyVal("reaction-distance", rule->reactionDistance, "%.0f");;
+            str += KeyVal("reactions-count", rule->reactionsCount);;
+
+            TABLE_ENCODER("reactions", rule->reactionsCount, EncodeConnections(&rule->reactionsTable[5*i], 5));
         }
 
         File::Data data;
@@ -173,6 +181,8 @@ namespace Saver {
                 KEYVAL_HANDLER("bounce-force", rule->bounceForce = stof(keyval.val))
                 KEYVAL_HANDLER("second-table", rule->secondtable = true)
                 KEYVAL_HANDLER("connections", rule->connections = true)
+                KEYVAL_HANDLER("reactions", rule->reactions = true)
+                KEYVAL_HANDLER("reactions-count", rule->reactionsCount = stoi(keyval.val))
                 KEYVAL_HANDLER("freqs", DecodeRow(keyval.val, rule->freqs))
                 KEYVAL_HANDLER("connection-attraction", rule->connectionAttraction = stof(keyval.val))
                 KEYVAL_HANDLER("connection-replusion", rule->connectionReplusion = stof(keyval.val))
@@ -201,6 +211,7 @@ namespace Saver {
                 TABLE_HANDLER("2force", DecodeRow(val, &rule->forces2[idx*10]))
                 TABLE_HANDLER("2zone", DecodeRow(val, &rule->zones2[idx*10]))
                 TABLE_HANDLER("connections", DecodeConnections(val, &rule->connectionsPriority[idx*10]))
+                TABLE_HANDLER("reactions", DecodeConnections(val, &rule->reactionsTable[i*5]))
             } else if (c != '\r') line += c;
         }
     }
