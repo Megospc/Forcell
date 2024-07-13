@@ -623,7 +623,29 @@ namespace Interface {
         if (ImGui::Button("Clear", buttonDouble)) {
             for (uint i = 0; i < 100; i++) ptr[i] = 0.0;
         }
+    }
 
+    void TypeSelect(string id, int* ptr, float size, bool canbeminus) {
+        ImVec4 clr = *ptr == -1 ? ImVec4(1.0, 1.0, 1.0, 0.2):GetTypeColor(*ptr);
+
+        ImVec4 clrDefault = clr;
+        clrDefault.w *= 0.5;
+        ImVec4 clrActive = clrDefault;
+        clrActive.w += 0.2;
+        ImVec4 clrHover = clrDefault;
+        clrHover.w += 0.4;
+
+        ImGui::PushStyleColor(ImGuiCol_FrameBg, clrDefault);
+        ImGui::PushStyleColor(ImGuiCol_FrameBgActive, clrActive);
+        ImGui::PushStyleColor(ImGuiCol_FrameBgHovered, clrHover);
+        
+        ImGui::SetNextItemWidth(Scale(size));
+        DragInt(("##"+id).c_str(), ptr, 0.05, canbeminus ? -2:-1, 10, *ptr == -1 || *ptr == rule.types ? "-":"%d");
+
+        if (*ptr >= rule.types) *ptr = canbeminus ? -1:0;
+        if (*ptr == (canbeminus ? -2:-1)) *ptr = rule.types-1;
+
+        ImGui::PopStyleColor(3);
     }
 
     void KeyHint(string key, float offset = 0.0) {
@@ -1152,27 +1174,8 @@ namespace Interface {
                                 for (uint k = 0; k < 2; k++) {
                                     int* ptr = &rule.connectionsPriority[j*10+i*2+k];
 
-                                    ImVec4 clr = *ptr == -1 ? ImVec4(1.0, 1.0, 1.0, 0.2):GetTypeColor(*ptr);
-
-                                    ImVec4 clrDefault = clr;
-                                    clrDefault.w *= 0.5;
-                                    ImVec4 clrActive = clrDefault;
-                                    clrActive.w += 0.2;
-                                    ImVec4 clrHover = clrDefault;
-                                    clrHover.w += 0.4;
-
-                                    ImGui::PushStyleColor(ImGuiCol_FrameBg, clrDefault);
-                                    ImGui::PushStyleColor(ImGuiCol_FrameBgActive, clrActive);
-                                    ImGui::PushStyleColor(ImGuiCol_FrameBgHovered, clrHover);
-                                    
-                                    ImGui::SetNextItemWidth(Scale(15.0));
-                                    DragInt((string("##connections")+std::to_string(i)+"-"+std::to_string(j)+"-"+std::to_string(k)).c_str(), ptr, 0.05, -2, 10, *ptr == -1 || *ptr == rule.types ? "-":"%d");
+                                    TypeSelect(string("connections")+std::to_string(i)+"-"+std::to_string(j)+"-"+std::to_string(k), ptr, 15.0, true);
                                     ImGui::SameLine();
-
-                                    if (*ptr >= rule.types) *ptr = -1;
-                                    if (*ptr == -2) *ptr = rule.types-1;
-
-                                    ImGui::PopStyleColor(3);
                                 }
 
                                 ImGui::InvisibleButton(
@@ -1201,6 +1204,59 @@ namespace Interface {
                 }
 
                 CollapsingEnd;
+            }
+
+            CollapsingHeader("Reactions") {
+                WarnText("Beta Feature: The following data will not be saved in the rule file!");
+
+                ImGui::Checkbox("Reactions", &rule.reactions);
+
+                ImGui::SetNextItemWidth(Scale(60.0));
+                DragFloat("Connection distance", &rule.reactionDistance, 0.1, 0.0, 10000.0, "%.0f");
+
+                SmallOffset("reactions-prebtns");
+
+                if (rule.reactionsCount == MAX_REACTIONS) WarnText("Maximum number of reactions reached");
+
+                if (ImGui::Button("New", buttonMedium) && rule.reactionsCount < MAX_REACTIONS) {
+                    rule.reactionsTable[rule.reactionsCount*5] = -1;
+                    rule.reactionsTable[rule.reactionsCount*5+1] = 0;
+                    rule.reactionsTable[rule.reactionsCount*5+2] = -1;
+                    rule.reactionsTable[rule.reactionsCount*5+3] = -1;
+                    rule.reactionsTable[rule.reactionsCount*5+4] = -1;
+                    rule.reactionsCount++;
+                }
+                ImGui::SameLine();
+                if (ImGui::Button("Clear", buttonMedium)) rule.reactionsCount = 0;
+                
+                for (uint i = 0; i < rule.reactionsCount; i++) {
+                    TypeSelect("reactios-from-"+std::to_string(i), &rule.reactionsTable[i*5], 18.0, true);
+                    ImGui::SameLine();
+                    ImGui::Text("+");
+                    ImGui::SameLine();
+                    TypeSelect("reactios-val1-"+std::to_string(i), &rule.reactionsTable[i*5+2], 18.0, true);
+                    ImGui::SameLine();
+                    TypeSelect("reactios-val2-"+std::to_string(i), &rule.reactionsTable[i*5+3], 18.0, true);
+                    ImGui::SameLine();
+                    TypeSelect("reactios-val3-"+std::to_string(i), &rule.reactionsTable[i*5+4], 18.0, true);
+                    ImGui::SameLine();
+                    ImGui::Text("=");
+                    ImGui::SameLine();
+                    TypeSelect("reactios-to-"+std::to_string(i), &rule.reactionsTable[i*5+1], 18.0, false);
+                    ImGui::SameLine();
+
+                    if (ImGui::Button(("X##reactionsx"+std::to_string(i)).c_str(), buttonTiny)) {
+                        uint start = (i+1)*5;
+                        uint end = rule.reactionsCount*5;
+                        uint len = end-start;
+                        uint target = i*5;
+
+                        for (uint j = 0; j < len; j++) rule.reactionsTable[target+j] = rule.reactionsTable[start+j];
+
+                        rule.reactionsCount--;
+                        i--;
+                    }
+                }
             }
 
             ImGui::End();

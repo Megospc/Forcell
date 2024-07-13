@@ -92,11 +92,11 @@ namespace Simulation {
 
         bool reactions = false;
 
-        float reactionDistance = 100.0;
+        float reactionDistance = 50.0;
 
-        int reactionsTable[5*MAX_REACTIONS] = { 0, 1, 3, 2, 1 };
+        int reactionsTable[5*MAX_REACTIONS];
 
-        int reactionsCount = 1;
+        int reactionsCount = 0;
 
         void clamp() {
             SCLAMP(types, 1, 10);
