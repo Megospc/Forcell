@@ -6,6 +6,7 @@
 #include "Random.h"
 
 #define MAX_SIMULATION_THREADS 256
+#define MAX_REACTIONS 100
 
 #include <thread>
 
@@ -89,6 +90,14 @@ namespace Simulation {
 
         int connectionsPriority[100];
 
+        bool reactions = false;
+
+        float reactionDistance = 100.0;
+
+        int reactionsTable[5*MAX_REACTIONS] = { 0, 1, 3, 2, 1 };
+
+        int reactionsCount = 1;
+
         void clamp() {
             SCLAMP(types, 1, 10);
         }
@@ -160,6 +169,7 @@ namespace Simulation {
         float size;
         float mass;
         int type;
+        int ntype;
         int connections[5];
         int connis[5]; // Connection IDs
     };
@@ -214,6 +224,7 @@ namespace Simulation {
 
                     particles[i].size = Rand::Range(10.0/mspread, 10.0*mspread);
                     particles[i].type = GetParticleType(rule, (float)i/(particlesCount-1)*sumfreq);
+                    particles[i].ntype = -1;
 
                     for (uint j = 0; j < 5; j++) particles[i].connections[j] = -1;
 
@@ -292,6 +303,8 @@ namespace Simulation {
 
            TASKFN_EXTDEFINER();
            TASKFN_EXTDEFINER(_connections);
+           TASKFN_EXTDEFINER(_reactions);
+           TASKFN_EXTDEFINER(_connections_reactions);
 
             void step(uint, float);
 
@@ -378,16 +391,17 @@ namespace Simulation {
     } 
 
     // Main loops
-    #define TASKFN_LOOPS(code) for (uint i = start; i < end; i++) { \
+    #define TASKFN_LOOP1(code) for (uint i = start; i < end; i++) { \
         Particle* a = &particles[i]; \
         \
-        for (uint j = 0; j < particlesCount; j++) { \
-            if (i == j) continue; \
-            \
-            Particle* b = &particles[j]; \
-            \
-            code \
-        } \
+        code \
+    }
+    #define TASKFN_LOOP2(code) for (uint j = 0; j < particlesCount; j++) { \
+        if (i == j) continue; \
+        \
+        Particle* b = &particles[j]; \
+        \
+        code \
     }
 
     // Calculate distance
@@ -486,88 +500,100 @@ namespace Simulation {
         } \
     }
 
-    #define TASKFN_FORCELL(name, code, extensions) SIMULATION_TASKFN(name, \
-        TASKFN_LOOPS( \
-            TASKFN_DISTANCE \
-            TASKFN_RADIUSES \
-            \
-            float f = 0.0; \
-            \
-            extensions \
-            \
-            if (TASKFN_COLLITEST) { \
-                TASKFN_MINDIST \
-                TASKFN_COLLIFORCE \
-            } else { \
+    #define TASKFN_FORCELL(name, code, ext, ext1, ext2) SIMULATION_TASKFN(name, \
+        TASKFN_LOOP1( \
+            ext1 \
+            TASKFN_LOOP2( \
+                TASKFN_DISTANCE \
+                TASKFN_RADIUSES \
+                \
+                float f = 0.0; \
+                \
+                ext \
+                \
+                if (TASKFN_COLLITEST) { \
+                    TASKFN_MINDIST \
+                    TASKFN_COLLIFORCE \
+                } else { \
+                    TASKFN_RULEIDX \
+                    \
+                    code \
+                } \
+                \
+                TASKFN_ACCEPTFORCE \
+            ) \
+            ext2 \
+        ) \
+    )
+
+    #define TASKFN_CONSTANT(name, code, ext, ext1, ext2) SIMULATION_TASKFN(name, \
+        TASKFN_LOOP1( \
+            ext1 \
+            TASKFN_LOOP2( \
+                TASKFN_DISTANCE \
+                \
+                float f = 0.0; \
+                \
+                ext \
+                \
                 TASKFN_RULEIDX \
                 \
-                code \
-            } \
-            \
-            TASKFN_ACCEPTFORCE \
-        ) \
-    )
-
-    #define TASKFN_CONSTANT(name, code, extensions) SIMULATION_TASKFN(name, \
-        TASKFN_LOOPS( \
-            TASKFN_DISTANCE \
-            \
-            float f = 0.0; \
-            \
-            extensions \
-            \
-            TASKFN_RULEIDX \
-            \
-            TASKFN_MINDIST \
-            \
-            code \
-            \
-            TASKFN_ACCEPTFORCE \
-        ) \
-    )
-
-    #define TASKFN_CLASSIC(name, code, extensions) SIMULATION_TASKFN(name, \
-        TASKFN_LOOPS( \
-            TASKFN_DISTANCE \
-            TASKFN_RADIUSES \
-            \
-            float f = 0.0; \
-            \
-            extensions \
-            \
-            if ((d2 < rr2) || d2 < 0.0001) { \
                 TASKFN_MINDIST \
                 \
-                float d = SQRT(d2); \
-                \
-                float depth = (rr-d)/rr; \
-                \
-                f = -depth*rule->bounceForce/d; \
-            } else { \
-                TASKFN_RULEIDX \
-                \
                 code \
-            } \
-            TASKFN_ACCEPTFORCE \
+                \
+                TASKFN_ACCEPTFORCE \
+            ) \
+            ext2 \
         ) \
     )
 
-    #define TASK1_FORCELL(name, extensions) TASKFN_FORCELL(task1forcell##name, TASKFN_FORCE, extensions)
-    #define TASK2_FORCELL(name, extensions) TASKFN_FORCELL(task2forcell##name, TASKFN_FORCEADD(zones, forces) TASKFN_FORCEADD(zones2, forces2), extensions)
-    #define TASK1_CONST(name, extensions) TASKFN_CONSTANT(task1const##name, TASKFN_CONST_FORCE, extensions)
-    #define TASK2_CONST(name, extensions) TASKFN_CONSTANT(task2const##name, TASKFN_CONST_FORCEADD(zones, forces) TASKFN_CONST_FORCEADD(zones2, forces2), extensions)
-    #define TASK1_CLASSIC(name, extensions) TASKFN_CLASSIC(task1classic##name, TASKFN_CLASSIC_FORCE, extensions)
-    #define TASK2_CLASSIC(name, extensions) TASKFN_CLASSIC(task2classic##name, TASKFN_CLASSIC_FORCEADD(zones, forces) TASKFN_CLASSIC_FORCEADD(zones2, forces2), extensions)
+    #define TASKFN_CLASSIC(name, code, ext, ext1, ext2) SIMULATION_TASKFN(name, \
+        TASKFN_LOOP1( \
+            ext1 \
+            TASKFN_LOOP2( \
+                TASKFN_DISTANCE \
+                TASKFN_RADIUSES \
+                \
+                float f = 0.0; \
+                \
+                ext \
+                \
+                if ((d2 < rr2) || d2 < 0.0001) { \
+                    TASKFN_MINDIST \
+                    \
+                    float d = SQRT(d2); \
+                    \
+                    float depth = (rr-d)/rr; \
+                    \
+                    f = -depth*rule->bounceForce/d; \
+                } else { \
+                    TASKFN_RULEIDX \
+                    \
+                    code \
+                } \
+                TASKFN_ACCEPTFORCE \
+            ) \
+            ext2 \
+        ) \
+    )
 
-    #define TASKFN_EXTENSER(name, extensions) \
-        TASK1_FORCELL(name, extensions); \
-        TASK2_FORCELL(name, extensions); \
-        TASK1_CONST(name, extensions); \
-        TASK2_CONST(name, extensions); \
-        TASK1_CLASSIC(name, extensions); \
-        TASK2_CLASSIC(name, extensions);
+    #define TASK1_FORCELL(name, ext, ext1, ext2) TASKFN_FORCELL(task1forcell##name, TASKFN_FORCE, ext, ext1, ext2)
+    #define TASK2_FORCELL(name, ext, ext1, ext2) TASKFN_FORCELL(task2forcell##name, TASKFN_FORCEADD(zones, forces) TASKFN_FORCEADD(zones2, forces2), ext, ext1, ext2)
+    #define TASK1_CONST(name, ext, ext1, ext2) TASKFN_CONSTANT(task1const##name, TASKFN_CONST_FORCE, ext, ext1, ext2)
+    #define TASK2_CONST(name, ext, ext1, ext2) TASKFN_CONSTANT(task2const##name, TASKFN_CONST_FORCEADD(zones, forces) TASKFN_CONST_FORCEADD(zones2, forces2), ext, ext1, ext2)
+    #define TASK1_CLASSIC(name, ext, ext1, ext2) TASKFN_CLASSIC(task1classic##name, TASKFN_CLASSIC_FORCE, ext, ext1, ext2)
+    #define TASK2_CLASSIC(name, ext, ext1, ext2) TASKFN_CLASSIC(task2classic##name, TASKFN_CLASSIC_FORCEADD(zones, forces) TASKFN_CLASSIC_FORCEADD(zones2, forces2), ext, ext1, ext2)
+
+    #define TASKFN_EXTENSER(name, ext, ext1, ext2) \
+        TASK1_FORCELL(name, ext, ext1, ext2); \
+        TASK2_FORCELL(name, ext, ext1, ext2); \
+        TASK1_CONST(name, ext, ext1, ext2); \
+        TASK2_CONST(name, ext, ext1, ext2); \
+        TASK1_CLASSIC(name, ext, ext1, ext2); \
+        TASK2_CLASSIC(name, ext, ext1, ext2);
     
-    #define TASKFN_EXT_CONNECTIONS {\
+    #define TASKFN_EXT_CONNECTIONS { \
         float maxd = rule->connectionDistance; \
         float maxd2 = maxd*maxd; \
         \
@@ -575,6 +601,38 @@ namespace Simulation {
             tryConnect(i, j); \
         } \
     }
+
+    #define TASKFN_EXT_REACTIONS { \
+        float maxd = rule->reactionDistance; \
+        float maxd2 = maxd*maxd; \
+        \
+        if (d2 < maxd2) { \
+            for (uint k = 0; k < rule->reactionsCount; k++) { \
+                for (uint l = 0; l < 3; l++) { \
+                    if (rule->reactionsTable[k*3+2+l] == b->type) { \
+                        reactions[k*3+l] = true; \
+                        break; \
+                    } \
+                } \
+            } \
+        } \
+    }
+
+    #define TASKFN_EXT1_REACTIONS \
+        bool reactions[MAX_REACTIONS*3]; \
+        \
+        for (uint i = 0; i < rule->reactionsCount; i++) { \
+            for (uint j = 0; j < 3; j++) { \
+                reactions[i*3+j] = rule->reactionsTable[i*5+2+j] == -1 ? true:false; \
+            } \
+        }
+    
+    #define TASKFN_EXT2_REACTIONS \
+        for (uint i = 0; i < rule->reactionsCount; i++) { \
+            if (rule->reactionsTable[i*5] != a->type) continue; \
+            \
+            if (reactions[i*3] && reactions[i*3+1] && reactions[i*3+2]) a->ntype = rule->reactionsTable[i*5+1]; \
+        }
 
     #define TASKFN_EXTUSER(name) \
         if (self->rule->secondtable) { \
@@ -587,14 +645,24 @@ namespace Simulation {
             if (self->rule->forcetype == 2) self->task1classic##name(start, end); \
         }
     
-    TASKFN_EXTENSER(,); // No extensions
-    TASKFN_EXTENSER(_connections, TASKFN_EXT_CONNECTIONS); // Connections
+    TASKFN_EXTENSER(,,,); // No extensions
+    TASKFN_EXTENSER(_connections, TASKFN_EXT_CONNECTIONS,,); // Connections
+    TASKFN_EXTENSER(_reactions, TASKFN_EXT_REACTIONS, TASKFN_EXT1_REACTIONS, TASKFN_EXT2_REACTIONS); // Reactions
+    TASKFN_EXTENSER(_connections_reactions, TASKFN_EXT_CONNECTIONS TASKFN_EXT_REACTIONS, TASKFN_EXT1_REACTIONS, TASKFN_EXT2_REACTIONS); // Reactions + Connections
 
     void task(Simulation* self, uint start, uint end) {
         if (self->rule->connections) {
-            TASKFN_EXTUSER(_connections);
+            if (self->rule->reactions) {
+                TASKFN_EXTUSER(_connections_reactions);
+            } else {
+                TASKFN_EXTUSER(_connections);
+            }
         } else {
-            TASKFN_EXTUSER();
+            if (self->rule->reactions) {
+                TASKFN_EXTUSER(_reactions);
+            } else {
+                TASKFN_EXTUSER();
+            }
         }
     }
 
@@ -671,6 +739,8 @@ namespace Simulation {
             if (a->y < a->size) a->y = a->size, a->vy = ABS(a->vy);
             if (a->x >= width-a->size) a->x = width-a->size, a->vx = IABS(a->vx);
             if (a->y >= height-a->size) a->y = height-a->size, a->vy = IABS(a->vy);
+
+            if (a->ntype >= 0) a->type = a->ntype, a->ntype = -1;
         }
 
         #ifndef NDEBUG

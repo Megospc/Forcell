@@ -22,7 +22,7 @@ Version: 1.8.0 (11.07.2024)
 + Multi-threaded computing on CPU
 + Supporting Ubuntu and Windows
 + Fullscreen mode
-+ Create random rules with one click
++ Create random rules with two clicks
 + Export/Import rules as files
 + Style customizing
 
