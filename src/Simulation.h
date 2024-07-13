@@ -92,7 +92,7 @@ namespace Simulation {
 
         bool reactions = false;
 
-        float reactionDistance = 50.0;
+        float reactionDistance = 100.0;
 
         int reactionsTable[5*MAX_REACTIONS];
 
@@ -140,6 +140,17 @@ namespace Simulation {
             connectionMax = connectionDistance+Rand::Range(30.0, 100.0);
             connectionAttraction = 0.01;
             connectionReplusion = 0.0;
+
+            reactionDistance = Rand::Range(50.0, 200.0);
+            reactionsCount = Rand::Int(6);
+
+            for (uint i = 0; i < reactionsCount; i++) {
+                reactionsTable[i*5] = Rand::Int(types);
+                reactionsTable[i*5+1] = Rand::Int(types);
+                reactionsTable[i*5+2] = Rand::Int(types);
+                reactionsTable[i*5+3] = Rand::Chance(0.5) ? Rand::Int(types):-1;
+                reactionsTable[i*5+4] = Rand::Chance(0.1) ? Rand::Int(types):-1;
+            }
         }
 
         // Metadata
