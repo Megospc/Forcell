@@ -620,7 +620,7 @@ namespace Simulation {
         if (d2 < maxd2) { \
             for (uint k = 0; k < rule->reactionsCount; k++) { \
                 for (uint l = 0; l < 3; l++) { \
-                    if (rule->reactionsTable[k*3+2+l] == b->type) { \
+                    if (rule->reactionsTable[k*3+2+l] == b->type && !reactions[k*3+l]) { \
                         reactions[k*3+l] = true; \
                         break; \
                     } \
