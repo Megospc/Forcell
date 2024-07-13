@@ -486,13 +486,10 @@ namespace Interface {
         { // Load icon
             Img::Data raw = Img::Load("assets/icon.png");
 
-            Img::Data squared = Img::Square(raw);
-
-            GLFWimage image = Img::ToGLFW(squared);
+            GLFWimage image = Img::ToGLFW(raw);
 
             window->icon(&image);
 
-            squared.destroy();
             raw.destroy();
         }
 

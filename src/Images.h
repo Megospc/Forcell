@@ -55,38 +55,6 @@ namespace Img {
         return texture;
     }
 
-    Data Square(Data img) {
-        uint max = MAX(img.width, img.height);
-
-        uint offsetX = (max-img.width)/2;
-        uint offsetY = (max-img.height)/2;
-
-        Data result;
-
-        result.width = max;
-        result.height = max;
-
-        uint length = max*max*4;
-
-        result.data = MALLOC(uint8_t, length);
-
-        for (uint i = 0; i < length; i++) result.data[i] = 0;
-
-        result.needdestroy = true;
-
-        for (uint x = 0; x < img.width; x++) for (uint y = 0; y < img.height; y++) {
-            uint i = ((x+offsetX)+(y+offsetY)*max)*4;
-            uint j = (x+y*img.width)*4;
-
-            result.data[i] = img.data[j];
-            result.data[i+1] = img.data[j+1];
-            result.data[i+2] = img.data[j+2];
-            result.data[i+3] = img.data[j+3];
-        }
-
-        return result;
-    }
-
     GLFWimage ToGLFW(Data img) {
         GLFWimage result;
 
