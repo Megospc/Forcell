@@ -402,7 +402,7 @@ namespace Render {
                     framebuffer1->bind();
                     programPost2->use();
                     glUniform3f(programPost2->uniform("uColorMul"), clrmul.x, clrmul.y, clrmul.z);
-                    glUniform2f(programPost2->uniform("uBlur"), blur2, blur2/scrRatio);
+                    glUniform2f(programPost2->uniform("uBlur"), blur2/scrRatio, blur2);
                     drawquad();
                     framebuffer1->unbind();
 

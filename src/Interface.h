@@ -53,8 +53,6 @@ namespace Interface {
     Simulation::Params params;
     Simulation::Rule rule;
 
-    cstr filedialogpath;
-
     string creatorname = "";
 
     uint fps = 60, sps = 60;
@@ -421,10 +419,6 @@ namespace Interface {
                 if (c != '\r') line += c;
             }
         }
-    }
-
-    void LogVec2(ImVec2 v) {
-        Log(v.x << " " << v.y);
     }
 
     void StyleRescale() {        
