@@ -756,6 +756,7 @@ namespace Interface {
 
                 IGFD::FileDialogConfig config;
                 config.path = ".";
+                config.fileName = string(rule.name);
                 ImGuiFileDialog::Instance()->OpenDialog("SaveFile", "Save File", ".txt", config);
 
                 rulesavewindow = false;
