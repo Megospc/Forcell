@@ -911,7 +911,7 @@ namespace Interface {
                 ImGui::SetNextItemWidth(Scale(100.0));
                 ImGui::SliderFloat("Connection opacity", &connectionopacity, 0.0, 1.0, "%.2f");
                 ImGui::SetNextItemWidth(Scale(100.0));
-                ImGui::SliderFloat("Connection width", &connectionwidth, 0.0, 1.0, "%.2f");
+                ImGui::SliderFloat("Connection width", &connectionwidth, 0.0, 2.0, "%.2f");
 
                 ImGui::Checkbox("Addition effect", &glowing);
                 if (ImGui::Checkbox("Post-processing", &postproc)) recreateRender();

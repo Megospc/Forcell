@@ -343,8 +343,8 @@ namespace Simulation {
             int connectionPriority(uint atype, uint btype, uint i) {
                 int* p = &rule->connectionsPriority[atype*10+i*2];
 
-                if (p[0] == btype) return 2;
                 if (p[1] == btype) return 1;
+                if (p[0] == btype) return 2;
 
                 return 0;
             }
