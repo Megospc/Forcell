@@ -178,6 +178,14 @@ namespace Simulation {
         return 0;
     }
 
+    #define TASKFN_EXTDEFINER(name) \
+        void task1forcell##name(uint, uint); \
+        void task2forcell##name(uint, uint); \
+        void task1classic##name(uint, uint); \
+        void task2classic##name(uint, uint); \
+        void task1const##name(uint, uint); \
+        void task2const##name(uint, uint);
+
     class Simulation {
         public:
             Simulation(Params params) {
@@ -282,19 +290,8 @@ namespace Simulation {
                 }
             }
 
-            void task1forcell(uint, uint);
-            void task2forcell(uint, uint);
-            void task1const(uint, uint);
-            void task2const(uint, uint);
-            void task1classic(uint, uint);
-            void task2classic(uint, uint);
-
-            void task1forcell_connections(uint, uint);
-            void task2forcell_connections(uint, uint);
-            void task1const_connections(uint, uint);
-            void task2const_connections(uint, uint);
-            void task1classic_connections(uint, uint);
-            void task2classic_connections(uint, uint);
+           TASKFN_EXTDEFINER();
+           TASKFN_EXTDEFINER(_connections);
 
             void step(uint, float);
 

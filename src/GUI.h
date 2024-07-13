@@ -5,6 +5,7 @@
 #include <ImGUI/imgui.h>
 #include <ImGUI/imgui_impl_glfw.h>
 #include <ImGUI/imgui_impl_opengl3.h>
+#include <ImGuiFileDialog/ImGuiFileDialog.h>
 
 #include "Definitions.h"
 #include "Logger.h"

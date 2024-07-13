@@ -6,8 +6,6 @@
 #include "Simulation.h"
 #include "Files.h"
 
-#include <nfd.h>
-
 namespace Saver {
     string EncodeRow(float* data, uint size, cstr fmt) {
         string res = "";
@@ -47,7 +45,7 @@ namespace Saver {
         return res;
     }
 
-    void Save(Simulation::Rule* rule) {
+    void Save(Simulation::Rule* rule, cstr path) {
         string str = "";
 
         str += KeyVal("name", string(rule->name));
@@ -102,13 +100,7 @@ namespace Saver {
         data.data = str.data();
         data.length = str.length();
 
-        nfdu8char_t* path;
-
-        if (NFD_SaveDialog(&path, NULL, 0, ".", (string(rule->name)+".txt").c_str()) != NFD_OKAY) return;
-
         File::Write(path, data);
-
-        NFD_FreePathU8(path);
     }
 
     void DecodeRow(string str, float* data) {
@@ -156,14 +148,8 @@ namespace Saver {
         code; \
     }
 
-    void Open(Simulation::Rule* rule) {
-        nfdu8char_t* path;
-
-        if (NFD_OpenDialog(&path, NULL, 0, ".") != NFD_OKAY) return;
-
+    void Open(Simulation::Rule* rule, cstr path) {
         File::Data data = File::Read(path);
-
-        NFD_FreePath(path);
 
         rule->forcetype = 0;
 

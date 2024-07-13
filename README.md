@@ -76,7 +76,7 @@ There are these libraries used in this project:
 + [Dear ImGui](https://github.com/ocornut/imgui)
 + [GLFW 3.4](https://github.com/glfw/glfw)
 + [GLAD](https://github.com/dav1dde/glad-web)
-+ [NativeFileDialog Extended](https://github.com/btzy/nativefiledialog-extended)
++ [ImGuiFileDialog](https://github.com/aiekick/ImGuiFileDialog)
 + [STB](https://github.com/nothings/stb)
 + [vecpp](https://github.com/Megospc/vecpp)
 

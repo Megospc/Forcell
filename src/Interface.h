@@ -53,6 +53,8 @@ namespace Interface {
     Simulation::Params params;
     Simulation::Rule rule;
 
+    cstr filedialogpath;
+
     string creatorname = "";
 
     uint fps = 60, sps = 60;
@@ -722,7 +724,7 @@ namespace Interface {
         }
 
         if (rulesavewindow) {
-            ImGui::Begin("Saving rule", &rulemetawindow);
+            ImGui::Begin("Saving rule", &rulesavewindow);
 
             ImGui::Text("Name: ");
             ImGui::SetNextItemWidth(Scale(120.0));
@@ -736,7 +738,9 @@ namespace Interface {
             if (ImGui::Button("Save", buttonMedium)) {
                 creatorname = string(rule.creator);
 
-                Saver::Save(&rule);
+                IGFD::FileDialogConfig config;
+                config.path = ".";
+                ImGuiFileDialog::Instance()->OpenDialog("SaveFile", "Save File", ".txt", config);
 
                 rulesavewindow = false;
             }
@@ -769,6 +773,26 @@ namespace Interface {
             if (ImGui::Button("Cancel", buttonMedium)) randomwindow = false;
 
             ImGui::End();
+        }
+
+        if (ImGuiFileDialog::Instance()->Display("SaveFile")) {
+            if (ImGuiFileDialog::Instance()->IsOk()) {
+                std::string filePath = ImGuiFileDialog::Instance()->GetCurrentPath()+"/"+ImGuiFileDialog::Instance()->GetCurrentFileName();
+                
+                Saver::Save(&rule, filePath.c_str());
+            }
+            
+            ImGuiFileDialog::Instance()->Close();
+        }
+
+        if (ImGuiFileDialog::Instance()->Display("OpenFile")) {
+            if (ImGuiFileDialog::Instance()->IsOk()) {
+                std::string filePath = ImGuiFileDialog::Instance()->GetCurrentPath()+"/"+ImGuiFileDialog::Instance()->GetCurrentFileName();
+
+                Saver::Open(&rule, filePath.c_str());
+            }
+            
+            ImGuiFileDialog::Instance()->Close();
         }
 
         ImGui::Begin("Forcell");
@@ -995,7 +1019,10 @@ namespace Interface {
             ImGui::SameLine();
 
             if (ImGui::Button("Import", buttonMedium)) {
-                Saver::Open(&rule);
+                IGFD::FileDialogConfig config;
+                config.path = ".";
+                ImGuiFileDialog::Instance()->OpenDialog("OpenFile", "Choose File", ".txt", config);
+
                 rulemetawindow = true;
                 start();
             }
