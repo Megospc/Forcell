@@ -48,7 +48,6 @@ For Windows:
 For Ubuntu, these packages:
 + gcc
 + cmake
-+ libgtk-3-dev
 + make
 
 ### 📄 Steps

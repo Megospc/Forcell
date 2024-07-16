@@ -157,7 +157,9 @@ namespace Saver {
     }
 
     void Open(Simulation::Rule* rule, cstr path) {
-        File::Data data = File::Read(path);
+        File::Data data = File::Read(path, true);
+
+        if (data.length == -1) return;
 
         rule->forcetype = 0;
 

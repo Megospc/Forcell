@@ -381,7 +381,7 @@ namespace Render {
 
                 particleVAO->unbind();
 
-                if (glowing) GL::DisableBlending();
+                GL::DisableBlending();
 
                 if (pp) {
                     framebuffer1->unbind();

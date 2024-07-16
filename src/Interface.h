@@ -555,7 +555,7 @@ namespace Interface {
 
     ImVec2 TableSize() {
         return ImVec2(
-            ImGui::GetWindowContentRegionMax().x-50.0,
+            ImGui::GetWindowContentRegionMax().x-Scale(50.0),
             Scale(150.0)
         );
     }
@@ -650,6 +650,26 @@ namespace Interface {
     void WarnText(cstr text) {
         ImGui::TextColored(ImVec4(1.0, 1.0, 0.2, 1.0), text);
     }
+
+    void VerticalSeparator(string id, float width, float height, float margin) {
+        ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 0.0);
+        ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, Scale(ImVec2(2.0, 3.0)));
+        ImVec4 clr = ImVec4(0.25, 0.25, 0.25, 1.0);
+        ImGui::PushStyleColor(ImGuiCol_Button, clr);
+        ImGui::PushStyleColor(ImGuiCol_ButtonActive, clr);
+        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, clr);
+
+        ImGui::SameLine();
+        ImGui::InvisibleButton(("##btnoffset1"+id).c_str(), Scale(ImVec2(margin, height)));
+        ImGui::SameLine();
+        ImGui::Button(("##btn"+id).c_str(), Scale(ImVec2(width, height)));
+        ImGui::SameLine();
+        ImGui::InvisibleButton(("##btnoffset2"+id).c_str(), Scale(ImVec2(margin, height)));
+        ImGui::SameLine();
+
+        ImGui::PopStyleVar(2);
+        ImGui::PopStyleColor(3);
+    }
     
     void frame() {
         ImVec2 buttonTiny = Scale(ImVec2(18.0, 18.0));
@@ -734,7 +754,7 @@ namespace Interface {
 
             SmallOffset("rule-metadata-preok");
 
-            if (ImGui::Button("OK", buttonMedium)) rulemetawindow = false;
+            if (ImGui::Button("OK##rulemeta", buttonMedium)) rulemetawindow = false;
 
             ImGui::End();
         }
@@ -762,7 +782,7 @@ namespace Interface {
                 rulesavewindow = false;
             }
             ImGui::SameLine();
-            if (ImGui::Button("Cancel", buttonMedium)) rulesavewindow = false;
+            if (ImGui::Button("Cancel##rulesave", buttonMedium)) rulesavewindow = false;
 
             ImGui::End();
         }
@@ -779,7 +799,7 @@ namespace Interface {
 
             SmallOffset("random-prebtn");
 
-            if (ImGui::Button("OK", buttonMedium)) {
+            if (ImGui::Button("OK##random", buttonMedium)) {
                 rule.random(seed(), rndforcerange, rndzonerange);
 
                 start();
@@ -787,7 +807,7 @@ namespace Interface {
                 randomwindow = false;
             }
             ImGui::SameLine();
-            if (ImGui::Button("Cancel", buttonMedium)) randomwindow = false;
+            if (ImGui::Button("Cancel##random", buttonMedium)) randomwindow = false;
 
             ImGui::End();
         }
@@ -807,6 +827,8 @@ namespace Interface {
                 std::string filePath = ImGuiFileDialog::Instance()->GetCurrentPath()+"/"+ImGuiFileDialog::Instance()->GetCurrentFileName();
 
                 Saver::Open(&rule, filePath.c_str());
+
+                rulemetawindow = true;
             }
             
             ImGuiFileDialog::Instance()->Close();
@@ -1039,8 +1061,6 @@ namespace Interface {
                 IGFD::FileDialogConfig config;
                 config.path = ".";
                 ImGuiFileDialog::Instance()->OpenDialog("OpenFile", "Choose File", ".txt", config);
-
-                rulemetawindow = true;
             }
 
             if (ImGui::Button("Randomize", buttonDouble)) randomwindow = true;

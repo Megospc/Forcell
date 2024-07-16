@@ -10,6 +10,8 @@
 namespace File {
     namespace fs = std::filesystem;
 
+    typedef fs::path Path;
+
     struct Data {
         char* data;
 
@@ -71,5 +73,18 @@ namespace File {
 
     bool Write(string path, bool zeroend = false) {
         return Write(path.c_str(), zeroend);
+    }
+
+    string CreateDirectory(string path, string name) {
+        try {
+            fs::create_directory(path+name);
+            return "";
+        } catch (fs::filesystem_error err) {
+            return err.what();
+        }
+    }
+
+    string CurrentPath() {
+        return fs::current_path().string()+"/";
     }
 }
