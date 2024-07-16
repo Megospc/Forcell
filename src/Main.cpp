@@ -3,11 +3,11 @@
  * 
  * Copyright (c) 2024 Megospc
  * 
- * Version: 1.8.0 (11.07.2024)
+ * Version: 1.10.0 (16.07.2024)
  * 
 **********************************/
 
-#define VERSION "Version: 1.8.0 (11.07.2024)"
+#define VERSION "Version: 1.10.0 (16.07.2024)"
 
 #include "Definitions.h"
 #include "Interface.h"
