@@ -163,9 +163,9 @@ namespace Saver {
 
         rule->forcetype = 0;
 
-        writeStringToChar(rule->name, "Unnamed");
-        writeStringToChar(rule->creator, "[not provided]");
-        writeStringToChar(rule->lastupdate, "[not provided]");
+        writeStringToChar(rule->name, "Unnamed", 256);
+        writeStringToChar(rule->creator, "[not provided]", 256);
+        writeStringToChar(rule->lastupdate, "[not provided]", 256);
 
         string line = "";
 
@@ -198,8 +198,8 @@ namespace Saver {
                     if (keyval.val == "constant") rule->forcetype = 1;
                 })
 
-                KEYVAL_HANDLER("name", writeStringToChar(rule->name, keyval.val));
-                KEYVAL_HANDLER("creator", writeStringToChar(rule->creator, keyval.val));
+                KEYVAL_HANDLER("name", writeStringToChar(rule->name, keyval.val, 256));
+                KEYVAL_HANDLER("creator", writeStringToChar(rule->creator, keyval.val, 256));
 
                 KEYVAL_HANDLER("lastupdate", {
                     const time_t time = stol(keyval.val);

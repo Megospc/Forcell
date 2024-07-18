@@ -82,12 +82,14 @@ float angleOfVector(float x, float y, float d = -1.0) {
     return y < 0.0 ? MAX_ANGLE-a:a;
 }
 
-void writeStringToChar(char* target, string str) {
+void writeStringToChar(char* target, string str, uint length) {
     const char* data = str.c_str();
 
-    for (uint i = 0; i < str.length(); i++) target[i] = data[i];
+    uint len = MIN(str.length(), length-1);
 
-    target[str.length()] = '\0';
+    for (uint i = 0; i < len; i++) target[i] = data[i];
+
+    target[len] = '\0';
 }
 
 vec2 rotate90(vec2 v) {

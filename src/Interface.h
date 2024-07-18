@@ -1117,7 +1117,7 @@ namespace Interface {
             ImGui::Begin("Rule", &windowrule);
 
             if (ImGui::Button("Export", buttonMedium)) {
-                writeStringToChar(rule.creator, creatorname);
+                writeStringToChar(rule.creator, creatorname, 256);
                 rulesavewindow = true;
             }
 
