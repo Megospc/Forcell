@@ -34,6 +34,7 @@ namespace Interface {
     bool rulemetawindow = false;
     bool rulesavewindow = false;
     bool randomwindow = false;
+    bool fillwindow = false;
     bool starred = false;
 
     bool windowperformance = false;
@@ -76,6 +77,12 @@ namespace Interface {
 
     float rndforcerange = 2.0;
     float rndzonerange = 1000.0;
+
+    float* filltable;
+    float fillvalue;
+    string fillname = "";
+    float fillmin, fillmax, fillspeed;
+    cstr fillfmt;
 
     float GetScale(int scale = interfacescale) {
         if (scale == 0) return 1.0;
@@ -560,7 +567,7 @@ namespace Interface {
         );
     }
 
-    void RuleTable(cstr id, float* ptr, float min, float max, float speed, cstr fmt, bool forces = false) {
+    void RuleTable(cstr id, string name, float* ptr, float min, float max, float speed, cstr fmt, bool forces = false) {
         ImVec2 buttonDouble = Scale(ImVec2(165.0, 18.0));
 
         if (ImGui::BeginTable(
@@ -614,8 +621,14 @@ namespace Interface {
 
         SmallOffset("after-table"+string(id), 2.0);
 
-        if (ImGui::Button("Clear", buttonDouble)) {
-            for (uint i = 0; i < 100; i++) ptr[i] = 0.0;
+        if (ImGui::Button("Fill with", buttonDouble)) {
+            filltable = ptr;
+            fillmin = min;
+            fillmax = max;
+            fillspeed = speed;
+            fillfmt = fmt;
+            fillname = name;
+            fillwindow = true;
         }
     }
 
@@ -808,6 +821,26 @@ namespace Interface {
             }
             ImGui::SameLine();
             if (ImGui::Button("Cancel##random", buttonMedium)) randomwindow = false;
+
+            ImGui::End();
+        }
+
+        if (fillwindow) {
+            ImGui::Begin("Fill table", &fillwindow);
+
+            ImGui::Text("Fill table \"%s\" with:", fillname.c_str());
+            ImGui::SetNextItemWidth(Scale(120.0));
+            DragFloat("##fillvalue", &fillvalue, fillspeed, fillmin, fillmax, fillfmt);
+
+            SmallOffset("random-prebtn");
+
+            if (ImGui::Button("OK##fill", buttonMedium)) {
+                for (uint i = 0; i < 100; i++) filltable[i] = fillvalue;
+
+                fillwindow = false;
+            }
+            ImGui::SameLine();
+            if (ImGui::Button("Cancel##fill", buttonMedium)) fillwindow = false;
 
             ImGui::End();
         }
@@ -1090,7 +1123,7 @@ namespace Interface {
             }
 
             CollapsingHeader("Forces") {
-                RuleTable("forcetable", rule.forces, -5.0, 5.0, 0.001, "%.2f", true);
+                RuleTable("forcetable", "Forces", rule.forces, -5.0, 5.0, 0.001, "%.2f", true);
 
                 CollapsingEnd;
 
@@ -1098,7 +1131,7 @@ namespace Interface {
             }
 
             CollapsingHeader("Interaction distances") {
-                RuleTable("zonetable", rule.zones, 0.0, 10000.0, 1.0, "%.0f");
+                RuleTable("zonetable", "Interaction distances", rule.zones, 0.0, 10000.0, 1.0, "%.0f");
 
                 CollapsingEnd;
 
@@ -1109,7 +1142,7 @@ namespace Interface {
 
             if (rule.secondtable) {
                 CollapsingHeader("Forces 2") {
-                    RuleTable("forcetable2", rule.forces2, -10.0, 10.0, 0.001, "%.2f", true);
+                    RuleTable("forcetable2", "Forces 2", rule.forces2, -10.0, 10.0, 0.001, "%.2f", true);
 
                     CollapsingEnd;
 
@@ -1117,7 +1150,7 @@ namespace Interface {
                 }
 
                 CollapsingHeader("Interaction distances 2") {
-                    RuleTable("zonetable2", rule.zones2, 0.0, 10000.0, 1.0, "%.0f");
+                    RuleTable("zonetable2", "Interaction distances 2", rule.zones2, 0.0, 10000.0, 1.0, "%.0f");
 
                     CollapsingEnd;
 
