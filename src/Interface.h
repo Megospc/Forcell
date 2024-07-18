@@ -35,6 +35,7 @@ namespace Interface {
     bool rulesavewindow = false;
     bool randomwindow = false;
     bool fillwindow = false;
+    bool scalewindow = false;
     bool starred = false;
 
     bool windowperformance = false;
@@ -83,6 +84,10 @@ namespace Interface {
     string fillname = "";
     float fillmin, fillmax, fillspeed;
     cstr fillfmt;
+
+    float* scaletable;
+    string scalename;
+    float scalefactor;
 
     float GetScale(int scale = interfacescale) {
         if (scale == 0) return 1.0;
@@ -569,6 +574,7 @@ namespace Interface {
 
     void RuleTable(cstr id, string name, float* ptr, float min, float max, float speed, cstr fmt, bool forces = false) {
         ImVec2 buttonDouble = Scale(ImVec2(165.0, 18.0));
+        ImVec2 buttonMedium = Scale(ImVec2(80.0, 18.0));
 
         if (ImGui::BeginTable(
             id,
@@ -621,7 +627,7 @@ namespace Interface {
 
         SmallOffset("after-table"+string(id), 2.0);
 
-        if (ImGui::Button("Fill with", buttonDouble)) {
+        if (ImGui::Button("Fill with", buttonMedium)) {
             filltable = ptr;
             fillmin = min;
             fillmax = max;
@@ -629,6 +635,13 @@ namespace Interface {
             fillfmt = fmt;
             fillname = name;
             fillwindow = true;
+        }
+        ImGui::SameLine();
+        if (ImGui::Button("Scale by", buttonMedium)) {
+            scaletable = ptr;
+            scalefactor = 1.0;
+            scalename = name;
+            scalewindow = true;
         }
     }
 
@@ -828,11 +841,11 @@ namespace Interface {
         if (fillwindow) {
             ImGui::Begin("Fill table", &fillwindow);
 
-            ImGui::Text("Fill table \"%s\" with:", fillname.c_str());
+            ImGui::Text("Fill \"%s\" with:", fillname.c_str());
             ImGui::SetNextItemWidth(Scale(120.0));
             DragFloat("##fillvalue", &fillvalue, fillspeed, fillmin, fillmax, fillfmt);
 
-            SmallOffset("random-prebtn");
+            SmallOffset("fill-prebtn");
 
             if (ImGui::Button("OK##fill", buttonMedium)) {
                 for (uint i = 0; i < 100; i++) filltable[i] = fillvalue;
@@ -841,6 +854,26 @@ namespace Interface {
             }
             ImGui::SameLine();
             if (ImGui::Button("Cancel##fill", buttonMedium)) fillwindow = false;
+
+            ImGui::End();
+        }
+
+        if (scalewindow) {
+            ImGui::Begin("Fill table", &fillwindow);
+
+            ImGui::Text("Scale \"%s\" by:", scalename.c_str());
+            ImGui::SetNextItemWidth(Scale(120.0));
+            DragFloat("##scalefactor", &scalefactor, 0.005, -100.0, 100.0, "%.1f");
+
+            SmallOffset("scale-prebtn");
+
+            if (ImGui::Button("OK##scale", buttonMedium)) {
+                for (uint i = 0; i < 100; i++) scaletable[i] *= scalefactor;
+
+                scalewindow = false;
+            }
+            ImGui::SameLine();
+            if (ImGui::Button("Cancel##scale", buttonMedium)) scalewindow = false;
 
             ImGui::End();
         }
