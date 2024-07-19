@@ -859,7 +859,7 @@ namespace Interface {
         }
 
         if (scalewindow) {
-            ImGui::Begin("Fill table", &fillwindow);
+            ImGui::Begin("Scale table", &fillwindow);
 
             ImGui::Text("Scale \"%s\" by:", scalename.c_str());
             ImGui::SetNextItemWidth(Scale(120.0));
