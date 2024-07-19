@@ -14,6 +14,7 @@
 #include "Render.h"
 #include "Files.h"
 #include "Images.h"
+#include "Random.h"
 #include "Saver.h"
 
 #define CollapsingHeader(name) ImGui::Separator();if (ImGui::TreeNodeEx(name))
@@ -36,6 +37,7 @@ namespace Interface {
     bool randomwindow = false;
     bool fillwindow = false;
     bool scalewindow = false;
+    bool randomtablewindow = false;
     bool starred = false;
 
     bool windowperformance = false;
@@ -88,6 +90,13 @@ namespace Interface {
     float* scaletable;
     string scalename;
     float scalefactor;
+
+    float* randomtable;
+    string randomname;
+    float randommin, randommax;
+    float randomvmin, randomvmax, randomvspeed;
+    cstr randomfmt;
+    bool randomforces;
 
     float GetScale(int scale = interfacescale) {
         if (scale == 0) return 1.0;
@@ -572,6 +581,18 @@ namespace Interface {
         );
     }
 
+    void PushForceColor(float v) {
+        v = CLAMP(v, -2.0, 2.0)/2.0;
+
+        float r = v < 0.0 ? -v : v/3.0;
+        float g = v > 0.0 ? v : -v/3.0;
+        float b = ABS(v)/3.0;
+
+        ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(r, g, b, 0.7));
+        ImGui::PushStyleColor(ImGuiCol_FrameBgActive, ImVec4(r, g, b, 0.8));
+        ImGui::PushStyleColor(ImGuiCol_FrameBgHovered, ImVec4(r, g, b, 1.0));
+    }
+
     void RuleTable(cstr id, string name, float* ptr, float min, float max, float speed, cstr fmt, bool forces = false) {
         ImVec2 buttonDouble = Scale(ImVec2(165.0, 18.0));
         ImVec2 buttonMedium = Scale(ImVec2(80.0, 18.0));
@@ -595,20 +616,9 @@ namespace Interface {
                     for (uint i = 0; i < rule.types; i++) {
                         ImGui::TableSetColumnIndex(i+1);
 
+                        if (forces) PushForceColor(ptr[i+j*10]);
+
                         ImGui::SetNextItemWidth(Scale(30.0));
-
-                        if (forces) {
-                            float v = CLAMP(ptr[i+j*10], -1.0, 1.0);
-
-                            float r = v < 0.0 ? -v : v/3.0;
-                            float g = v > 0.0 ? v : -v/3.0;
-                            float b = ABS(v)/3.0;
-
-                            ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(r, g, b, 0.7));
-                            ImGui::PushStyleColor(ImGuiCol_FrameBgActive, ImVec4(r, g, b, 0.8));
-                            ImGui::PushStyleColor(ImGuiCol_FrameBgHovered, ImVec4(r, g, b, 1.0));
-                        }
-
                         DragFloat((string("##")+id+std::to_string(i)+"-"+std::to_string(j)).c_str(), &ptr[i+j*10], speed, min, max, fmt);
 
                         if (forces) ImGui::PopStyleColor(3);
@@ -627,6 +637,19 @@ namespace Interface {
 
         SmallOffset("after-table"+string(id), 2.0);
 
+        if (ImGui::Button("Randomize", buttonMedium)) {
+            randomtable = ptr;
+            randomname = name;
+            randommin = min;
+            randommax = max;
+            randomvmin = min;
+            randomvmax = max;
+            randomvspeed = speed;
+            randomfmt = fmt;
+            randomforces = forces;
+            randomtablewindow = true;
+        }
+        ImGui::SameLine();
         if (ImGui::Button("Fill with", buttonMedium)) {
             filltable = ptr;
             fillmin = min;
@@ -874,6 +897,39 @@ namespace Interface {
             }
             ImGui::SameLine();
             if (ImGui::Button("Cancel##scale", buttonMedium)) scalewindow = false;
+
+            ImGui::End();
+        }
+
+        if (randomtablewindow) {
+            ImGui::Begin("Randomize table", &randomtablewindow);
+
+            ImGui::Text("Fill table \"%s\" with random values", randomname.c_str());
+            ImGui::Text("from");
+            ImGui::SameLine();
+            if (randomforces) PushForceColor(randommin);
+            ImGui::SetNextItemWidth(Scale(30.0));
+            DragFloat("##rndtablemin", &randommin, randomvspeed, randomvmin, randomvmax, randomfmt);
+            ImGui::PopStyleColor(3);
+
+            ImGui::SameLine();
+
+            ImGui::Text("to");
+            ImGui::SameLine();
+            if (randomforces) PushForceColor(randommax);
+            ImGui::SetNextItemWidth(Scale(30.0));
+            DragFloat("##rndtablemax", &randommax, randomvspeed, randomvmin, randomvmax, randomfmt);
+            ImGui::PopStyleColor(3);
+
+            SmallOffset("scale-prebtn");
+
+            if (ImGui::Button("OK##rndtable", buttonMedium)) {
+                for (uint i = 0; i < 100; i++) randomtable[i] = Rand::Range(randommin, randommax);
+
+                randomtablewindow = false;
+            }
+            ImGui::SameLine();
+            if (ImGui::Button("Cancel##rndtable", buttonMedium)) randomtablewindow = false;
 
             ImGui::End();
         }
