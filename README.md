@@ -81,4 +81,4 @@ There are these libraries used in this project:
 + [vecpp](https://github.com/Megospc/vecpp)
 
 ## 🐞 Bug Reporting
-If you find any error, please [create](https://github.com/Megospc/Forcell/issues/new?assignees=&labels=&projects=&template=bug_report.md&title=) an Issue about it.
+If you find any bug, please [create](https://github.com/Megospc/Forcell/issues/new?assignees=&labels=&projects=&template=bug_report.md&title=) an Issue about it.

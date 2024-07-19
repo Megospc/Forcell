@@ -1136,6 +1136,7 @@ namespace Interface {
 
             ImGui::SetNextItemWidth(Scale(100.0));
             ImGui::InputInt("Number of types", &rule.types, 1, 1);
+            SCLAMP(rule.types, 1, 10);
             ImGui::SetNextItemWidth(Scale(100.0));
             DragFloat("Friction", &rule.friction, 0.0002, 0.0, 1.0, "%.3f");
             ImGui::SetNextItemWidth(Scale(100.0));
@@ -1354,9 +1355,6 @@ namespace Interface {
 
             ImGui::End();
         }
-
-        rule.clamp();
-        params.clamp();
 
         if (windowbuildinfo) {
             ImGui::Begin("Build info", &windowbuildinfo);

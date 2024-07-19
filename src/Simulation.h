@@ -98,10 +98,6 @@ namespace Simulation {
 
         int reactionsCount = 0;
 
-        void clamp() {
-            SCLAMP(types, 1, 10);
-        }
-
         void random(uint seed, float forcerange, float zonerange) {
             Rand::Seed(seed);
 
@@ -168,10 +164,6 @@ namespace Simulation {
         int particles = 400;
 
         Rule* rule;
-
-        void clamp() {
-            
-        }
     };
 
     struct Particle {
