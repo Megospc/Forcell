@@ -163,6 +163,8 @@ namespace Simulation {
 
         int particles = 400;
 
+        float initialForce = 0.0;
+
         Rule* rule;
     };
 
@@ -222,16 +224,18 @@ namespace Simulation {
                     particles[i].x = Rand::Range(0.0, width);
                     particles[i].y = Rand::Range(0.0, height);
 
-                    particles[i].vx = 0.0;
-                    particles[i].vy = 0.0;
-
                     particles[i].size = Rand::Range(10.0/mspread, 10.0*mspread);
                     particles[i].type = GetParticleType(rule, (float)i/(particlesCount-1)*sumfreq);
                     particles[i].ntype = -1;
 
                     for (uint j = 0; j < 5; j++) particles[i].connections[j] = -1;
 
-                    particles[i].mass = particles[i].size*particles[i].size/100.0;
+                    float mass = particles[i].size*particles[i].size/100.0;
+
+                    particles[i].mass = mass;
+
+                    particles[i].vx = Rand::Range(-params.initialForce, params.initialForce)/mass;
+                    particles[i].vy = Rand::Range(-params.initialForce, params.initialForce)/mass;
                 }
 
                 frame = 0;

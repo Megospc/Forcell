@@ -1405,6 +1405,8 @@ namespace Interface {
             params.height = params.width;
             ImGui::SetNextItemWidth(Scale(100.0));
             DragInt("Number of particles", &params.particles, 5.0, 0, 100000);
+            ImGui::SetNextItemWidth(Scale(100.0));
+            DragFloat("Initial speed", &params.initialForce, 0.01, 0, 10.0);
 
             if (ImGui::Button("Restart", buttonMedium)) start();
             KeyHint("[R]");
