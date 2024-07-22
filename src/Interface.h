@@ -120,6 +120,7 @@ namespace Interface {
     float particleglow = 1.0;
     float particlehole = 1.0;
     float connectionwidth = 1.0;
+    bool velocityshow = false;
 
     float zoom() {
         return POW(ZOOM_STEP, zoomsteps);
@@ -326,6 +327,7 @@ namespace Interface {
         if (postproc) str += KeyVal("postprocessing", "");
         if (zoomtocursor) str += KeyVal("zoom-to-mouse", "");
         if (starred) str += KeyVal("starred", "");
+        if (velocityshow) str += KeyVal("velocity-showing", "");
 
         str += KeyVal("last-star", std::to_string(laststar));
         
@@ -383,6 +385,7 @@ namespace Interface {
         windowbuildinfo = false;
         zoomtocursor = false;
         starred = false;
+        velocityshow = false;
 
         laststar = 0;
 
@@ -405,6 +408,7 @@ namespace Interface {
                 if (data.key == "postprocessing") postproc = true;
                 if (data.key == "zoom-to-mouse") zoomtocursor = true;
                 if (data.key == "starred") starred = true;
+                if (data.key == "velocity-showing") velocityshow = true;
 
                 if (data.key == "last-star") laststar = stol(data.val);
 
@@ -769,6 +773,7 @@ namespace Interface {
                 particlehole,
                 connectionopacity,
                 connectionwidth,
+                velocityshow,
                 (escaping ? vec3(0.5):vec3(1.0))*vec3(colorTone[0], colorTone[1], colorTone[2]),
                 glowing,
                 escaping
@@ -1056,6 +1061,8 @@ namespace Interface {
                 ImGui::SliderFloat("Connection opacity", &connectionopacity, 0.0, 1.0, "%.2f");
                 ImGui::SetNextItemWidth(Scale(100.0));
                 ImGui::SliderFloat("Connection width", &connectionwidth, 0.0, 2.0, "%.2f");
+
+                ImGui::Checkbox("Velocity visualization", &velocityshow);
 
                 ImGui::Checkbox("Addition effect", &glowing);
                 if (ImGui::Checkbox("Post-processing", &postproc)) recreateRender();

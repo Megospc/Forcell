@@ -6,6 +6,8 @@
 in vec2 fPos;
 in vec3 fBaseColor;
 in vec2 fTexPos;
+in float fOpacity;
+in float fBright;
 
 out vec4 fColor;
 
@@ -27,5 +29,7 @@ void main() {
         fColor = vec4(fBaseColor, (1.0-(d-INNER_SIZE*uSizing)/(1.0-INNER_SIZE*uSizing))*0.6*uGlowing);
     }
 
-    fColor.a *= uOpacity;
+    fColor.rgb *= fBright;
+
+    fColor.a *= uOpacity*fOpacity;
 }

@@ -92,7 +92,7 @@ namespace Render {
                     programPost1 = loadProgram(
                         "shaders/filltex-vertex.glsl",
                         "shaders/post1-fragment.glsl"
-                    , "render");
+                    , "post1");
 
                     if (!programPost1->isOk()) goto unsuccess;
 
@@ -101,7 +101,7 @@ namespace Render {
                     programPost2 = loadProgram(
                         "shaders/filltex-vertex.glsl",
                         "shaders/post2-fragment.glsl"
-                    , "render");
+                    , "post2");
 
                     if (!programPost2->isOk()) goto unsuccess;
 
@@ -119,6 +119,7 @@ namespace Render {
                 positionBuffer = new GL::AttribBuffer();
                 sizeBuffer = new GL::AttribBuffer();
                 typeBuffer = new GL::AttribBuffer();
+                velocityBuffer = new GL::AttribBuffer();
                 quadVertexBuffer = new GL::AttribBuffer();
                 connectionVertexBuffer = new GL::AttribBuffer();
                 connectionTypeBuffer = new GL::AttribBuffer();
@@ -150,6 +151,11 @@ namespace Render {
                 typeBuffer->setLocation(3);
                 typeBuffer->enable(1, GL_INT, sizeof(int), sizeof(vec2)*2+sizeof(float)*2, sizeof(Simulation::Particle), 1);
                 typeBuffer->unbind();
+
+                velocityBuffer->bind();
+                velocityBuffer->setLocation(4);
+                velocityBuffer->enable(2, GL_FLOAT, sizeof(float), sizeof(float)*2, sizeof(Simulation::Particle), 1);
+                velocityBuffer->unbind();
 
                 particleVAO->unbind();
 
@@ -215,6 +221,7 @@ namespace Render {
                 delete positionBuffer;
                 delete sizeBuffer;
                 delete typeBuffer;
+                delete velocityBuffer;
                 delete quadVertexBuffer;
                 delete connectionVertexBuffer;
                 delete connectionTypeBuffer;
@@ -236,7 +243,7 @@ namespace Render {
             void render(
                 vec2 camera, float zoom,
                 float particleopacity, float particlesize, float particleglow, float particlehole,
-                float connectionopacity, float connectionwidth,
+                float connectionopacity, float connectionwidth, bool velocityshow,
                 vec3 clrmul, bool glowing, bool strongblur
             ) {
                 if (!ok) return;
@@ -364,6 +371,7 @@ namespace Render {
                 glUniform1f(programParticle->uniform("uSizing"), particlesize);
                 glUniform1f(programParticle->uniform("uGlowing"), particleglow);
                 glUniform1f(programParticle->uniform("uHole"), particlehole);
+                glUniform1i(programParticle->uniform("uVelshow"), velocityshow ? 1:0);
 
                 positionBuffer->bind();
                 positionBuffer->data(simulation->particles, sizeof(Simulation::Particle)*simulation->particlesCount, GL_DYNAMIC_DRAW);
@@ -376,6 +384,10 @@ namespace Render {
                 typeBuffer->bind();
                 typeBuffer->data(simulation->particles, sizeof(Simulation::Particle)*simulation->particlesCount, GL_DYNAMIC_DRAW);
                 typeBuffer->unbind();
+
+                velocityBuffer->bind();
+                velocityBuffer->data(simulation->particles, sizeof(Simulation::Particle)*simulation->particlesCount, GL_DYNAMIC_DRAW);
+                velocityBuffer->unbind();
 
                 glDrawArraysInstanced(GL_TRIANGLES, 0, 6, simulation->particlesCount);
 
@@ -440,6 +452,7 @@ namespace Render {
             GL::AttribBuffer* positionBuffer;
             GL::AttribBuffer* sizeBuffer;
             GL::AttribBuffer* typeBuffer;
+            GL::AttribBuffer* velocityBuffer;
             GL::AttribBuffer* quadVertexBuffer;
             GL::AttribBuffer* connectionVertexBuffer;
             GL::AttribBuffer* connectionTypeBuffer;
