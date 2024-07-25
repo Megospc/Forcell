@@ -24,7 +24,7 @@ void main() {
     if (uVelshow == 1) {
         fBaseColor = uBaseColors[int(aType)];
 
-        float opacity = 0.5+(abs(aVelocity.x)+abs(aVelocity.y))/5.0;
+        float opacity = 0.5+(abs(aVelocity.x)+abs(aVelocity.y))/20.0;
 
         if (opacity > 1.2) opacity = 1.2;
 
